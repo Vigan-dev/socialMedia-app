@@ -15,18 +15,22 @@ import {
 import type { FeedMode } from './postUtils';
 
 type UsePostMutationsInput = {
+  clearComposerDraft: () => void;
   clearError: () => void;
   composerInput: string;
   feedMode: FeedMode;
+  resetComposerInput: (nextValue?: string) => void;
   setComposerInput: Dispatch<SetStateAction<string>>;
   setPosts: Dispatch<SetStateAction<Post[]>>;
   showError: (fallback: string, error?: unknown) => void;
 };
 
 export function usePostMutations({
+  clearComposerDraft,
   clearError,
   composerInput,
   feedMode,
+  resetComposerInput,
   setComposerInput,
   setPosts,
   showError,
@@ -60,7 +64,7 @@ export function usePostMutations({
     if (feedMode !== 'following') {
       setPosts((current) => [optimisticPost, ...current]);
     }
-    setComposerInput('');
+    resetComposerInput();
 
     try {
       const createdPost = await apiPostData(
@@ -79,6 +83,7 @@ export function usePostMutations({
               post.id === optimisticPost.id ? formatPost(createdPost) : post,
             ),
       );
+      clearComposerDraft();
     } catch (error) {
       if (feedMode !== 'following') {
         setPosts((current) =>

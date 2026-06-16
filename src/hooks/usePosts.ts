@@ -10,9 +10,14 @@ export type { FeedMode } from './posts/postUtils';
 type UsePostsInput = {
   isAuthReady: boolean;
   isLoggedIn: boolean;
+  draftOwnerKey?: string | null;
 };
 
-export function usePosts({ isAuthReady, isLoggedIn }: UsePostsInput) {
+export function usePosts({
+  draftOwnerKey,
+  isAuthReady,
+  isLoggedIn,
+}: UsePostsInput) {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
 
@@ -24,6 +29,7 @@ export function usePosts({ isAuthReady, isLoggedIn }: UsePostsInput) {
 
   const feed = useFeedPosts({
     clearError,
+    draftOwnerKey,
     isAuthReady,
     isLoggedIn,
     searchQuery,
@@ -51,6 +57,7 @@ export function usePosts({ isAuthReady, isLoggedIn }: UsePostsInput) {
     addReply: feed.addReply,
     clearError,
     blockUser: moderation.blockUser,
+    composerDraftStatus: feed.composerDraftStatus,
     composerInput: feed.composerInput,
     createPost: feed.createPost,
     deletePost: feed.deletePost,

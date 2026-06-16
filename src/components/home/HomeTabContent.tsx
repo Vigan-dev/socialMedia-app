@@ -92,7 +92,14 @@ export function HomeTabContent({
                       className="h-16 pt-1"
                     />
 
-                    <div className="flex justify-end border-t border-white/[0.03] pt-3">
+                    <div className="flex items-center justify-between gap-3 border-t border-white/[0.03] pt-3">
+                      <p className="min-h-4 text-xs text-slate-500">
+                        {posts.composerDraftStatus === 'restored' &&
+                          'Draft restored'}
+                        {posts.composerDraftStatus === 'saved' &&
+                          'Draft saved'}
+                      </p>
+
                       <Button
                         onClick={onPublishPost}
                         disabled={
@@ -172,9 +179,12 @@ export function HomeTabContent({
           )}
 
           <NotificationsSection
+            filter={notifications.filter}
             isLoading={notifications.isLoading}
-            items={notifications.items}
+            items={notifications.filteredItems}
+            onFilterChange={notifications.setFilter}
             onMarkAllRead={notifications.markAllRead}
+            totalCount={notifications.totalCount}
             unreadCount={notifications.unreadCount}
           />
         </>

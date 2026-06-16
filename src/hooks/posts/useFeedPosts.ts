@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import type { FeedMode } from './postUtils';
 import { selectFilteredPosts, selectTrendingItems } from './feedSelectors';
 import { useFeedPagination } from './useFeedPagination';
@@ -8,6 +9,7 @@ import { usePostMutations } from './usePostMutations';
 
 type UseFeedPostsInput = {
   clearError: () => void;
+  draftOwnerKey?: string | null;
   isAuthReady: boolean;
   isLoggedIn: boolean;
   searchQuery: string;
@@ -16,12 +18,15 @@ type UseFeedPostsInput = {
 
 export function useFeedPosts({
   clearError,
+  draftOwnerKey,
   isAuthReady,
   isLoggedIn,
   searchQuery,
   showError,
 }: UseFeedPostsInput) {
-  const [composerInput, setComposerInput] = useState('');
+  const composerDraft = useDraftAutosave({
+    storageKey: `versatile-post-draft:${draftOwnerKey ?? 'anonymous'}`,
+  });
   const [feedMode, setFeedMode] = useState<FeedMode>('latest');
   const feed = useFeedPagination({
     clearError,
@@ -31,10 +36,12 @@ export function useFeedPosts({
     showError,
   });
   const mutations = usePostMutations({
+    clearComposerDraft: composerDraft.clearDraft,
     clearError,
-    composerInput,
+    composerInput: composerDraft.value,
     feedMode,
-    setComposerInput,
+    resetComposerInput: composerDraft.resetValue,
+    setComposerInput: composerDraft.setValue,
     setPosts: feed.setPosts,
     showError,
   });
@@ -50,7 +57,8 @@ export function useFeedPosts({
   return {
     addComment: mutations.addComment,
     addReply: mutations.addReply,
-    composerInput,
+    composerDraftStatus: composerDraft.draftStatus,
+    composerInput: composerDraft.value,
     createPost: mutations.createPost,
     deletePost: mutations.deletePost,
     editPost: mutations.editPost,
@@ -61,7 +69,7 @@ export function useFeedPosts({
     isLoadingMorePosts: feed.isLoadingMorePosts,
     loadMorePosts: feed.loadMorePosts,
     posts: feed.posts,
-    setComposerInput,
+    setComposerInput: composerDraft.setValue,
     setFeedMode,
     setIsLoadingFeed: feed.setIsLoadingFeed,
     setPosts: feed.setPosts,

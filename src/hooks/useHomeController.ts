@@ -112,6 +112,7 @@ export function useHomeController() {
   const chat = useChat(auth.isLoggedIn);
   const notifications = useNotifications(auth.isLoggedIn);
   const posts = usePosts({
+    draftOwnerKey: auth.isLoggedIn ? auth.username : null,
     isAuthReady: auth.isAuthReady,
     isLoggedIn: auth.isLoggedIn,
   });
