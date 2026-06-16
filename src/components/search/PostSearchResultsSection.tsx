@@ -1,5 +1,6 @@
 'use client';
 
+import { HighlightedText } from '@/components/HighlightedText';
 import type { Post } from '@/types/feed';
 
 type PostSearchResultsSectionProps = {
@@ -27,7 +28,7 @@ export function PostSearchResultsSection({
               {post.user}
             </p>
             <p className="line-clamp-2 text-xs leading-relaxed text-slate-300">
-              {post.content}
+              <HighlightedText text={post.content} />
             </p>
           </div>
         ))}

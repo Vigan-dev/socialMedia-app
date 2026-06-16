@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { HighlightedText } from '@/components/HighlightedText';
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { Post, ReportTargetType } from '@/types/feed';
 
@@ -64,7 +65,7 @@ export function PostComments({
                     {comment.user}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-400">
-                    {comment.content}
+                    <HighlightedText text={comment.content} />
                   </p>
                 </div>
                 <button
@@ -134,7 +135,7 @@ export function PostComments({
                             {reply.user}
                           </p>
                           <p className="mt-1 text-sm leading-6 text-slate-400">
-                            {reply.content}
+                            <HighlightedText text={reply.content} />
                           </p>
                         </div>
                         <button
