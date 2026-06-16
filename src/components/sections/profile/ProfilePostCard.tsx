@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { HighlightedText } from '@/components/HighlightedText';
 import { ConfirmActionModal } from '@/components/ui/ActionModals';
+import { AppIcon } from '@/components/ui/AppIcon';
+import { sharePost, type SharePostResult } from '@/lib/postSharing';
 import type { Post } from '@/types/feed';
 
 type ProfilePostCardProps = {
@@ -18,6 +21,19 @@ export function ProfilePostCard({
   const [draftContent, setDraftContent] = useState(post.content);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState<SharePostResult | 'idle'>(
+    'idle',
+  );
+
+  useEffect(() => {
+    if (shareStatus === 'idle' || shareStatus === 'cancelled') return;
+
+    const timeoutId = window.setTimeout(() => {
+      setShareStatus('idle');
+    }, 2200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [shareStatus]);
 
   const submitEdit = () => {
     const content = draftContent.trim();
@@ -27,9 +43,22 @@ export function ProfilePostCard({
     setIsEditing(false);
   };
 
+  const handleSharePost = async () => {
+    const result = await sharePost({
+      content: post.content,
+      postId: String(post.id),
+      user: post.user,
+    });
+
+    setShareStatus(result);
+  };
+
   return (
     <>
-      <article className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+      <article
+        id={`post-${post.id}`}
+        className="scroll-mt-24 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4"
+      >
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold text-slate-300">{post.handle}</p>
@@ -79,12 +108,28 @@ export function ProfilePostCard({
             </div>
           </div>
         ) : (
-          <p className="mt-3 text-sm leading-6 text-slate-200">{post.content}</p>
+          <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-200">
+            <HighlightedText text={post.content} />
+          </p>
         )}
 
         <div className="mt-3 flex gap-4 text-xs text-slate-500">
           <span>{post.likes} likes</span>
           <span>{post.comments} comments</span>
+          <button
+            type="button"
+            onClick={handleSharePost}
+            className="ml-auto inline-flex items-center gap-1.5 font-semibold text-slate-500 transition hover:text-slate-300"
+          >
+            <AppIcon name="share" className="h-3.5 w-3.5" />
+            {shareStatus === 'copied'
+              ? 'Copied'
+              : shareStatus === 'shared'
+                ? 'Shared'
+                : shareStatus === 'failed'
+                  ? 'Copy failed'
+                : 'Share'}
+          </button>
         </div>
       </article>
 

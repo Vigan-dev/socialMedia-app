@@ -11,6 +11,7 @@ type IconName =
   | 'mute'
   | 'paperPlane'
   | 'reply'
+  | 'share'
   | 'shield'
   | 'trash'
   | 'userPlus';
@@ -81,6 +82,15 @@ const paths: Record<IconName, ReactNode> = {
     <>
       <path d="m9 8-4 4 4 4" />
       <path d="M5 12h9a5 5 0 0 1 5 5v1" />
+    </>
+  ),
+  share: (
+    <>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.6 10.7 6.8-4.4" />
+      <path d="m8.6 13.3 6.8 4.4" />
     </>
   ),
   shield: (

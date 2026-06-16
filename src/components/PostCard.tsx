@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import {
   ConfirmActionModal,
   ReportContentModal,
 } from '@/components/ui/ActionModals';
+import { HighlightedText } from '@/components/HighlightedText';
 import { PostComments } from '@/components/posts/PostComments';
 import { AppIcon } from '@/components/ui/AppIcon';
+import { sharePost, type SharePostResult } from '@/lib/postSharing';
 import type { Post, ReportReason, ReportTargetType } from '@/types/feed';
 
 interface PostCardProps {
@@ -52,6 +54,9 @@ export const PostCard = React.memo(function PostCard({
 }: PostCardProps) {
   const [draftContent, setDraftContent] = useState(post.content);
   const [isEditing, setIsEditing] = useState(false);
+  const [shareStatus, setShareStatus] = useState<SharePostResult | 'idle'>(
+    'idle',
+  );
   const [showComments, setShowComments] = useState(false);
   const [reportTarget, setReportTarget] = useState<{
     id: string;
@@ -81,6 +86,16 @@ export const PostCard = React.memo(function PostCard({
   const canFollow = Boolean(post.authorId) && !post.isOwnPost;
   const canModerateAuthor = Boolean(post.authorId) && !post.isOwnPost;
 
+  useEffect(() => {
+    if (shareStatus === 'idle' || shareStatus === 'cancelled') return;
+
+    const timeoutId = window.setTimeout(() => {
+      setShareStatus('idle');
+    }, 2200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [shareStatus]);
+
   const submitEdit = () => {
     const content = draftContent.trim();
     if (!content || content === post.content) {
@@ -103,9 +118,22 @@ export const PostCard = React.memo(function PostCard({
     });
   };
 
+  const handleSharePost = async () => {
+    const result = await sharePost({
+      content: post.content,
+      postId: String(post.id),
+      user: post.user,
+    });
+
+    setShareStatus(result);
+  };
+
   return (
     <>
-    <article className="feed-card flex gap-4 border-b border-white/[0.05] bg-[#0c111d]/10 p-5 transition duration-200 hover:bg-[#0c111d]/40">
+    <article
+      id={`post-${post.id}`}
+      className="feed-card flex scroll-mt-24 gap-4 border-b border-white/[0.05] bg-[#0c111d]/10 p-5 transition duration-200 hover:bg-[#0c111d]/40"
+    >
       {post.avatarUrl ? (
         <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-white/[0.1] shadow-sm">
           <Image
@@ -218,7 +246,7 @@ export const PostCard = React.memo(function PostCard({
           </div>
         ) : (
           <p className="mb-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-300">
-            {post.content}
+            <HighlightedText text={post.content} />
           </p>
         )}
 
@@ -243,6 +271,23 @@ export const PostCard = React.memo(function PostCard({
             <AppIcon name="heart" className={liked ? 'fill-current' : ''} />
             <span>{liked ? 'Liked' : 'Like'}</span>
             <span className={liked ? 'text-rose-500/90' : ''}>{post.likes}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSharePost}
+            className="inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 transition-colors hover:bg-white/[0.05] hover:text-slate-300"
+          >
+            <AppIcon name="share" className="h-4 w-4" />
+            <span>
+              {shareStatus === 'copied'
+                ? 'Copied'
+                : shareStatus === 'shared'
+                  ? 'Shared'
+                  : shareStatus === 'failed'
+                    ? 'Copy failed'
+                  : 'Share'}
+            </span>
           </button>
 
           <button
