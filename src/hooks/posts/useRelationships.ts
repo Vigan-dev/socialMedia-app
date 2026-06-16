@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { apiArray, apiPostData } from '@/lib/apiClient';
-import { decodeNetworkUser } from '@/lib/apiSchemas';
+import { apiJsonData, apiPostData } from '@/lib/apiClient';
+import { decodeNetworkUser, decodeNetworkUsers } from '@/lib/apiSchemas';
 import type { NetworkUser, Post } from '@/types/feed';
 import type { Dispatch, SetStateAction } from 'react';
 import { scoreTextMatch } from './postUtils';
@@ -53,10 +53,22 @@ export function useRelationships({
       try {
         const [usersData, followersData, followingData, suggestionsData] =
           await Promise.all([
-            apiArray('/users', decodeNetworkUser),
-            apiArray('/users/me/followers', decodeNetworkUser),
-            apiArray('/users/me/following', decodeNetworkUser),
-            apiArray('/users/suggestions', decodeNetworkUser),
+            apiJsonData('/users', 'Failed to load users', decodeNetworkUsers),
+            apiJsonData(
+              '/users/me/followers',
+              'Failed to load followers',
+              decodeNetworkUsers,
+            ),
+            apiJsonData(
+              '/users/me/following',
+              'Failed to load following',
+              decodeNetworkUsers,
+            ),
+            apiJsonData(
+              '/users/suggestions',
+              'Failed to load suggestions',
+              decodeNetworkUsers,
+            ),
           ]);
 
         if (!isMounted) return;

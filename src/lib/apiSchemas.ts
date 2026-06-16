@@ -219,6 +219,13 @@ function arrayValue<T>(
   return value.map((item, index) => decodeWithContext(item, `${label}[${index}]`, decodeItem));
 }
 
+export function decodeArrayOf<T>(
+  label: string,
+  decodeItem: (item: unknown) => T,
+) {
+  return (value: unknown) => arrayValue(value, label, decodeItem);
+}
+
 function decodeWithContext<T>(
   item: unknown,
   label: string,
@@ -281,6 +288,8 @@ export function decodePost(input: unknown): Post {
   };
 }
 
+export const decodePosts = decodeArrayOf('Posts', decodePost);
+
 export function decodeFeedPage(input: unknown): FeedPage {
   if (Array.isArray(input)) {
     return {
@@ -318,6 +327,8 @@ export function decodeNetworkUser(input: unknown): NetworkUser {
   };
 }
 
+export const decodeNetworkUsers = decodeArrayOf('Network users', decodeNetworkUser);
+
 export function decodeNotification(input: unknown): NotificationItem {
   const data = objectRecord(input, 'Notification');
 
@@ -334,6 +345,8 @@ export function decodeNotification(input: unknown): NotificationItem {
     user: stringValue(data.user, 'Notification user'),
   };
 }
+
+export const decodeNotifications = decodeArrayOf('Notifications', decodeNotification);
 
 export function decodeMessageThread(input: unknown): MessageThread {
   const data = objectRecord(input, 'Message thread');
@@ -358,6 +371,8 @@ export function decodeMessageThread(input: unknown): MessageThread {
   };
 }
 
+export const decodeMessageThreads = decodeArrayOf('Message threads', decodeMessageThread);
+
 export function decodeMessageItem(input: unknown): MessageItem {
   const data = objectRecord(input, 'Message');
   const sender = objectRecord(data.sender, 'Message sender');
@@ -376,6 +391,8 @@ export function decodeMessageItem(input: unknown): MessageItem {
     time: stringValue(data.time, 'Message time'),
   };
 }
+
+export const decodeMessageItems = decodeArrayOf('Messages', decodeMessageItem);
 
 export function decodeNotificationSettings(input: unknown): NotificationSettings {
   const data = objectRecord(input, 'Notification settings');
@@ -472,6 +489,8 @@ export function decodeChatSession(input: unknown): ChatSession {
   };
 }
 
+export const decodeChatSessions = decodeArrayOf('Support chat sessions', decodeChatSession);
+
 export function decodeSupportHistoryItem(input: unknown): SupportHistoryItem {
   const data = objectRecord(input, 'Support history item');
 
@@ -481,6 +500,8 @@ export function decodeSupportHistoryItem(input: unknown): SupportHistoryItem {
     assistantMessage: stringValue(data.assistantMessage, 'Support history assistantMessage'),
   };
 }
+
+export const decodeSupportHistory = decodeArrayOf('Support history', decodeSupportHistoryItem);
 
 export function decodeAdminMetrics(input: unknown): AdminMetrics {
   const data = objectRecord(input, 'Admin metrics');
@@ -507,6 +528,8 @@ export function decodeAdminUser(input: unknown): AdminUser {
   };
 }
 
+export const decodeAdminUsers = decodeArrayOf('Admin users', decodeAdminUser);
+
 export function decodeAdminReport(input: unknown): AdminReport {
   const data = objectRecord(input, 'Admin report');
   const reporter =
@@ -527,6 +550,8 @@ export function decodeAdminReport(input: unknown): AdminReport {
     targetType: literalUnion(data.targetType, reportTargetTypes, 'Admin report targetType'),
   };
 }
+
+export const decodeAdminReports = decodeArrayOf('Admin reports', decodeAdminReport);
 
 export function decodeReportStatusUpdate(input: unknown): ReportStatusUpdate {
   const data = objectRecord(input, 'Report status update');

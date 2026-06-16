@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  apiArray,
   apiDeleteVoid,
+  apiJsonData,
   apiPatchData,
 } from '@/lib/apiClient';
 import {
-  decodeAdminReport,
+  decodeAdminReports,
   decodeReportStatusUpdate,
   type AdminReport,
 } from '@/lib/apiSchemas';
@@ -28,11 +28,10 @@ export function ModerationSection({ onLogout }: { onLogout: () => void }) {
       setIsLoading(true);
       setError('');
       setReports(
-        await apiArray(
+        await apiJsonData(
           `/moderation/reports?status=${status}`,
-          decodeAdminReport,
-          undefined,
           'Moderation reports failed',
+          decodeAdminReports,
         ),
       );
     } catch (error) {

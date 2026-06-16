@@ -1,4 +1,5 @@
 import { appConfig } from '@/lib/config';
+import { decodeArrayOf } from '@/lib/apiSchemas';
 
 type ApiErrorBody = {
   message?: string | string[];
@@ -212,12 +213,13 @@ export async function apiData<T>(
   }
 }
 
-function asApiArray(data: unknown): unknown[] {
-  if (!Array.isArray(data)) {
-    throw new Error('API response must be an array.');
-  }
-
-  return data;
+export function apiJsonData<T>(
+  input: string | URL,
+  fallback: string,
+  shape: ApiShape<T>,
+  init?: ApiFetchInit,
+) {
+  return apiData(input, init, fallback, shape);
 }
 
 export function apiArray<T>(
@@ -226,18 +228,7 @@ export function apiArray<T>(
   init?: ApiFetchInit,
   fallback = 'Request failed',
 ) {
-  return apiData(input, init, fallback, (data) => {
-    const items = asApiArray(data);
-
-    return items.map((item, index) => {
-      try {
-        return itemShape(item);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : fallback;
-        throw new Error(`API response item ${index}: ${message}`);
-      }
-    });
-  });
+  return apiData(input, init, fallback, decodeArrayOf('API response', itemShape));
 }
 
 export function apiPatchArray<T>(

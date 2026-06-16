@@ -1,8 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { apiArray, apiPatchData, apiPostData } from '@/lib/apiClient';
-import { decodeMessageItem, decodeMessageThread } from '@/lib/apiSchemas';
+import { apiJsonData, apiPatchData, apiPostData } from '@/lib/apiClient';
+import {
+  decodeMessageItem,
+  decodeMessageItems,
+  decodeMessageThread,
+  decodeMessageThreads,
+} from '@/lib/apiSchemas';
 import { MessageItem, MessageThread } from '@/components/sections/MessagesSection';
 
 export function useChat(isLoggedIn: boolean) {
@@ -23,11 +28,10 @@ export function useChat(isLoggedIn: boolean) {
   const loadThreads = useCallback(async () => {
     if (!isLoggedIn) return;
 
-    const data = await apiArray<MessageThread>(
+    const data = await apiJsonData<MessageThread[]>(
       '/conversations',
-      decodeMessageThread,
-      undefined,
       'Failed to load conversations',
+      decodeMessageThreads,
     );
 
     setThreads(data);
@@ -41,11 +45,10 @@ export function useChat(isLoggedIn: boolean) {
     async (conversationId: string) => {
       if (!conversationId) return;
 
-      const data = await apiArray<MessageItem>(
+      const data = await apiJsonData<MessageItem[]>(
         `/conversations/${conversationId}/messages`,
-        decodeMessageItem,
-        undefined,
         'Failed to load messages',
+        decodeMessageItems,
       );
 
       setMessages(data);

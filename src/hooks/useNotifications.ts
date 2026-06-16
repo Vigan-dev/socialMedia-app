@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { apiArray, apiPatchArray } from '@/lib/apiClient';
-import { decodeNotification } from '@/lib/apiSchemas';
+import { apiJsonData, apiPatchArray } from '@/lib/apiClient';
+import { decodeNotification, decodeNotifications } from '@/lib/apiSchemas';
 import { NotificationItem } from '@/components/sections/NotificationsSection';
 
 export function useNotifications(isLoggedIn: boolean) {
@@ -26,11 +26,10 @@ export function useNotifications(isLoggedIn: boolean) {
     try {
       setIsLoading(true);
 
-      const data = await apiArray<NotificationItem>(
+      const data = await apiJsonData<NotificationItem[]>(
         '/notifications',
-        decodeNotification,
-        undefined,
         'Failed to load notifications',
+        decodeNotifications,
       );
 
       setItems(data);

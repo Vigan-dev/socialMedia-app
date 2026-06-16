@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  apiArray,
-  apiData,
   apiDeleteVoid,
+  apiJsonData,
   apiPatchData,
 } from '@/lib/apiClient';
 import {
   decodeAdminMetrics,
-  decodeAdminReport,
+  decodeAdminReports,
   decodeAdminUser,
+  decodeAdminUsers,
   decodeReportStatusUpdate,
   type AdminMetrics,
   type AdminReport,
@@ -37,12 +37,17 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
       setIsLoading(true);
       setError('');
       const [nextMetrics, nextUsers, nextReports] = await Promise.all([
-        apiData('/admin/metrics', undefined, 'Admin metrics failed', decodeAdminMetrics),
-        apiArray(
+        apiJsonData('/admin/metrics', 'Admin metrics failed', decodeAdminMetrics),
+        apiJsonData(
           `/admin/users${query ? `?q=${encodeURIComponent(query)}` : ''}`,
-          decodeAdminUser,
+          'Admin users failed',
+          decodeAdminUsers,
         ),
-        apiArray(`/admin/reports?status=${status}`, decodeAdminReport),
+        apiJsonData(
+          `/admin/reports?status=${status}`,
+          'Admin reports failed',
+          decodeAdminReports,
+        ),
       ]);
 
       setMetrics(nextMetrics);

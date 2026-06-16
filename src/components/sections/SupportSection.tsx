@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { apiArray, apiPostData } from '@/lib/apiClient';
+import { apiJsonData, apiPostData } from '@/lib/apiClient';
 import {
   clearLegacySupportSession,
   clearSupportSession,
@@ -11,9 +11,9 @@ import {
   writeSupportSession,
 } from '@/lib/supportSessionStorage';
 import {
-  decodeChatSession,
+  decodeChatSessions,
   decodeSupportChatResponse,
-  decodeSupportHistoryItem,
+  decodeSupportHistory,
   type ChatSession,
   type SupportHistoryItem,
 } from '@/lib/apiSchemas';
@@ -63,11 +63,10 @@ export function SupportSection({ userId }: SupportSectionProps) {
       }
 
       try {
-        const data = await apiArray<ChatSession>(
+        const data = await apiJsonData<ChatSession[]>(
           supportEndpoint,
-          decodeChatSession,
-          undefined,
           'Support sessions failed to load',
+          decodeChatSessions,
         );
 
         setSessions(data);
@@ -111,11 +110,10 @@ export function SupportSection({ userId }: SupportSectionProps) {
       if (!sessionId || !userId) return;
 
       try {
-        const history = await apiArray<SupportHistoryItem>(
+        const history = await apiJsonData<SupportHistoryItem[]>(
           `${supportEndpoint}/${sessionId}`,
-          decodeSupportHistoryItem,
-          undefined,
           'Support history failed to load',
+          decodeSupportHistory,
         );
 
         const restoredMessages: ChatMessage[] = [welcomeMessage];
@@ -146,11 +144,10 @@ export function SupportSection({ userId }: SupportSectionProps) {
   async function openSession(selectedSessionId: string) {
     setSessionId(selectedSessionId);
 
-    const history = await apiArray<SupportHistoryItem>(
+    const history = await apiJsonData<SupportHistoryItem[]>(
       `${supportEndpoint}/${selectedSessionId}`,
-      decodeSupportHistoryItem,
-      undefined,
       'Support history failed to load',
+      decodeSupportHistory,
     );
 
     const restoredMessages: ChatMessage[] = [];
