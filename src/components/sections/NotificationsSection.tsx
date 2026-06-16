@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { HighlightedText } from '@/components/HighlightedText';
 import { UserAvatar } from '@/components/UserAvatar';
 
 export interface NotificationItem {
@@ -16,10 +17,18 @@ export interface NotificationItem {
   user: string;
 }
 
+export type NotificationFilter =
+  | 'all'
+  | 'unread'
+  | NotificationItem['type'];
+
 interface NotificationsSectionProps {
+  filter: NotificationFilter;
   isLoading: boolean;
   items: NotificationItem[];
+  onFilterChange: (filter: NotificationFilter) => void;
   onMarkAllRead: () => void;
+  totalCount: number;
   unreadCount: number;
 }
 
@@ -50,11 +59,24 @@ function getTypeLabel(type: NotificationItem['type']) {
 }
 
 export function NotificationsSection({
+  filter,
   isLoading,
   items,
+  onFilterChange,
   onMarkAllRead,
+  totalCount,
   unreadCount,
 }: NotificationsSectionProps) {
+  const filterOptions: Array<{ id: NotificationFilter; label: string }> = [
+    { id: 'all', label: 'All' },
+    { id: 'unread', label: 'Unread' },
+    { id: 'like', label: 'Likes' },
+    { id: 'comment', label: 'Comments' },
+    { id: 'follow', label: 'Follows' },
+    { id: 'mention', label: 'Mentions' },
+    { id: 'message', label: 'Messages' },
+  ];
+
   if (isLoading) {
     return (
       <div className="space-y-3 p-5">
@@ -68,7 +90,7 @@ export function NotificationsSection({
     );
   }
 
-  if (items.length === 0) {
+  if (totalCount === 0) {
     return (
       <div className="p-10 text-center">
         <p className="text-sm font-medium text-slate-400">No notifications yet</p>
@@ -81,20 +103,50 @@ export function NotificationsSection({
 
   return (
     <div>
-      <div className="flex items-center justify-between border-b border-white/[0.05] px-5 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {unreadCount} unread
-        </p>
+      <div className="border-b border-white/[0.05] px-5 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {unreadCount} unread
+          </p>
 
-        <button
-          type="button"
-          onClick={onMarkAllRead}
-          disabled={unreadCount === 0}
-          className="rounded-full border border-white/[0.08] px-3 py-1 text-xs font-medium text-slate-300 transition hover:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Mark all read
-        </button>
+          <button
+            type="button"
+            onClick={onMarkAllRead}
+            disabled={unreadCount === 0}
+            className="rounded-full border border-white/[0.08] px-3 py-1 text-xs font-medium text-slate-300 transition hover:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Mark all read
+          </button>
+        </div>
+
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {filterOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onFilterChange(option.id)}
+              className={`whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition ${
+                filter === option.id
+                  ? 'border-indigo-400/70 bg-indigo-500/15 text-indigo-100'
+                  : 'border-white/[0.08] text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {items.length === 0 && (
+        <div className="p-10 text-center">
+          <p className="text-sm font-medium text-slate-400">
+            No notifications match this filter
+          </p>
+          <p className="mt-1 text-xs text-slate-600">
+            Switch filters to see other notification categories.
+          </p>
+        </div>
+      )}
 
       <div className="divide-y divide-white/[0.03]">
         {items.map((item) => (
@@ -127,7 +179,10 @@ export function NotificationsSection({
 
               {item.content && (
                 <p className="mt-2 line-clamp-2 rounded-lg bg-white/[0.03] px-3 py-2 text-xs leading-5 text-slate-400">
-                  {item.content}
+                  <HighlightedText
+                    text={item.content}
+                    hashtagClassName="font-semibold text-indigo-200"
+                  />
                 </p>
               )}
 

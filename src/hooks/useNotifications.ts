@@ -1,12 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { apiJsonData, apiPatchArray } from '@/lib/apiClient';
 import { decodeNotification, decodeNotifications } from '@/lib/apiSchemas';
-import { NotificationItem } from '@/components/sections/NotificationsSection';
+import {
+  type NotificationFilter,
+  type NotificationItem,
+} from '@/components/sections/NotificationsSection';
+
+function matchesFilter(item: NotificationItem, filter: NotificationFilter) {
+  if (filter === 'all') return true;
+  if (filter === 'unread') return !item.read;
+
+  return item.type === filter;
+}
 
 export function useNotifications(isLoggedIn: boolean) {
   const [items, setItems] = useState<NotificationItem[]>([]);
+  const [filter, setFilter] = useState<NotificationFilter>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -72,13 +83,22 @@ export function useNotifications(isLoggedIn: boolean) {
     clearError();
   }, [clearError, isLoggedIn, loadNotifications]);
 
+  const filteredItems = useMemo(
+    () => items.filter((item) => matchesFilter(item, filter)),
+    [filter, items],
+  );
+
   return {
     clearError,
     error,
+    filter,
+    filteredItems,
     isLoading,
     items,
     loadNotifications,
     markAllRead,
+    setFilter,
+    totalCount: items.length,
     unreadCount: items.filter((item) => !item.read).length,
   };
 }
