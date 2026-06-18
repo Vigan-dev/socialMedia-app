@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiJsonData, apiPatchData, apiPostData } from '@/lib/apiClient';
 import {
   decodeMessageItem,
@@ -18,6 +18,7 @@ export function useChat(isLoggedIn: boolean) {
   const [conversationSearch, setConversationSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const markingReadThreadIds = useRef<Set<string>>(new Set());
 
   const clearError = useCallback(() => setError(''), []);
 
@@ -41,7 +42,7 @@ export function useChat(isLoggedIn: boolean) {
     clearError();
   }, [activeThreadId, clearError, isLoggedIn]);
 
-  const loadMessages = useCallback(
+  const fetchMessages = useCallback(
     async (conversationId: string) => {
       if (!conversationId) return;
 
@@ -52,6 +53,14 @@ export function useChat(isLoggedIn: boolean) {
       );
 
       setMessages(data);
+      clearError();
+    },
+    [clearError],
+  );
+
+  const markThreadRead = useCallback(
+    async (conversationId: string) => {
+      if (!conversationId) return;
 
       try {
         const readData = await apiPatchData(
@@ -66,11 +75,10 @@ export function useChat(isLoggedIn: boolean) {
           ),
         );
       } catch {
-        // Loading messages should not fail just because read receipts failed.
+        // Read receipts should not block message loading or refresh.
       }
-      clearError();
     },
-    [clearError],
+    [],
   );
 
   const startConversation = useCallback(
@@ -93,14 +101,14 @@ export function useChat(isLoggedIn: boolean) {
             : [data, ...current];
         });
         setActiveThreadId(data.id);
-        await loadMessages(data.id);
+        await fetchMessages(data.id);
         return data.id;
       } catch (error) {
         showError('Could not start that conversation. Please try again.', error);
         throw error;
       }
     },
-    [clearError, loadMessages, showError],
+    [clearError, fetchMessages, showError],
   );
 
   const updateTyping = useCallback(
@@ -202,11 +210,29 @@ export function useChat(isLoggedIn: boolean) {
   useEffect(() => {
     if (!activeThreadId) return;
 
-    loadMessages(activeThreadId).catch((error) => {
+    fetchMessages(activeThreadId).catch((error) => {
       console.error('Failed loading messages:', error);
       showError('Failed to load messages. Please try again.', error);
     });
-  }, [activeThreadId, loadMessages, showError]);
+  }, [activeThreadId, fetchMessages, showError]);
+
+  useEffect(() => {
+    const activeThread = threads.find((thread) => thread.id === activeThreadId);
+    if (
+      !activeThread ||
+      activeThread.unreadCount === 0 ||
+      markingReadThreadIds.current.has(activeThread.id)
+    ) {
+      return;
+    }
+
+    markingReadThreadIds.current.add(activeThread.id);
+    markThreadRead(activeThread.id)
+      .catch(() => undefined)
+      .finally(() => {
+        markingReadThreadIds.current.delete(activeThread.id);
+      });
+  }, [activeThreadId, markThreadRead, threads]);
 
   useEffect(() => {
     if (!isLoggedIn || !activeThreadId) return;
@@ -215,13 +241,13 @@ export function useChat(isLoggedIn: boolean) {
       loadThreads().catch((error) =>
         showError('Conversation refresh failed. Retrying in the background.', error),
       );
-      loadMessages(activeThreadId).catch((error) =>
+      fetchMessages(activeThreadId).catch((error) =>
         showError('Message refresh failed. Retrying in the background.', error),
       );
     }, 3500);
 
     return () => window.clearInterval(interval);
-  }, [activeThreadId, isLoggedIn, loadMessages, loadThreads, showError]);
+  }, [activeThreadId, fetchMessages, isLoggedIn, loadThreads, showError]);
 
   const filteredThreads = useMemo(() => {
     const query = conversationSearch.toLowerCase().trim();
