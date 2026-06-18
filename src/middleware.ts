@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const authRoutes = ['/login', '/signup', '/forgot-password'];
+const protectedRoutes = [
+  '/admin',
+  '/messages',
+  '/moderation',
+  '/notifications',
+  '/settings',
+];
+
+function matchesRoutePrefix(pathname: string, route: string) {
+  return pathname === route || pathname.startsWith(`${route}/`);
+}
 
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('access_token')?.value;
@@ -9,9 +19,11 @@ export function middleware(request: NextRequest) {
   const hasSession = Boolean(accessToken || refreshToken);
   const { pathname } = request.nextUrl;
 
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    matchesRoutePrefix(pathname, route),
+  );
 
-  if (!hasSession && !isAuthRoute) {
+  if (!hasSession && isProtectedRoute) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set(
       'callbackUrl',
