@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiJsonData, apiPatchArray } from '@/lib/apiClient';
 import { decodeNotification, decodeNotifications } from '@/lib/apiSchemas';
 import {
@@ -20,12 +20,24 @@ export function useNotifications(isLoggedIn: boolean) {
   const [filter, setFilter] = useState<NotificationFilter>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const isRefreshingRef = useRef(false);
 
   const clearError = useCallback(() => setError(''), []);
 
   const showError = useCallback((fallback: string, error?: unknown) => {
     setError(error instanceof Error ? error.message : fallback);
   }, []);
+
+  const fetchNotifications = useCallback(async () => {
+    const data = await apiJsonData<NotificationItem[]>(
+      '/notifications',
+      'Failed to load notifications',
+      decodeNotifications,
+    );
+
+    setItems(data);
+    clearError();
+  }, [clearError]);
 
   const loadNotifications = useCallback(async () => {
     if (!isLoggedIn) {
@@ -36,15 +48,7 @@ export function useNotifications(isLoggedIn: boolean) {
 
     try {
       setIsLoading(true);
-
-      const data = await apiJsonData<NotificationItem[]>(
-        '/notifications',
-        'Failed to load notifications',
-        decodeNotifications,
-      );
-
-      setItems(data);
-      clearError();
+      await fetchNotifications();
     } catch (error) {
       console.error('Failed loading notifications:', error);
       setItems([]);
@@ -52,7 +56,24 @@ export function useNotifications(isLoggedIn: boolean) {
     } finally {
       setIsLoading(false);
     }
-  }, [clearError, isLoggedIn, showError]);
+  }, [clearError, fetchNotifications, isLoggedIn, showError]);
+
+  const refreshNotifications = useCallback(async () => {
+    if (!isLoggedIn || isRefreshingRef.current) return;
+
+    try {
+      isRefreshingRef.current = true;
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Failed refreshing notifications:', error);
+      showError(
+        'Notification refresh failed. Retrying in the background.',
+        error,
+      );
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  }, [fetchNotifications, isLoggedIn, showError]);
 
   const markAllRead = useCallback(async () => {
     if (!isLoggedIn) return;
@@ -82,6 +103,34 @@ export function useNotifications(isLoggedIn: boolean) {
     setItems([]);
     clearError();
   }, [clearError, isLoggedIn, loadNotifications]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const interval = window.setInterval(() => {
+      refreshNotifications().catch(() => undefined);
+    }, 20000);
+
+    return () => window.clearInterval(interval);
+  }, [isLoggedIn, refreshNotifications]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshNotifications().catch(() => undefined);
+      }
+    };
+
+    window.addEventListener('focus', refreshIfVisible);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+
+    return () => {
+      window.removeEventListener('focus', refreshIfVisible);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+    };
+  }, [isLoggedIn, refreshNotifications]);
 
   const filteredItems = useMemo(
     () => items.filter((item) => matchesFilter(item, filter)),
