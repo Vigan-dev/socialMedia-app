@@ -23,6 +23,14 @@ import { Card } from '@/components/ui/Card';
 
 const reportStatuses = ['open', 'reviewed', 'dismissed', 'actioned', 'all'];
 
+function formatAction(action: string) {
+  return action.replace(/_/g, ' ');
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleString();
+}
+
 export function AdminSection({ onLogout }: { onLogout: () => void }) {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([]);
@@ -31,8 +39,11 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('open');
   const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
-  const [activePanel, setActivePanel] = useState<'users' | 'reports'>('reports');
+  const [activePanel, setActivePanel] = useState<'reports' | 'users'>(
+    'reports',
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const [isChartVisible, setIsChartVisible] = useState(false);
   const [error, setError] = useState('');
 
   const loadAdminData = useCallback(async () => {
@@ -78,9 +89,29 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
     void loadAdminData();
   }, [loadAdminData]);
 
+  useEffect(() => {
+    if (isLoading) return;
+
+    setIsChartVisible(false);
+    let timeoutId: number | undefined;
+    const frameId = window.requestAnimationFrame(() => {
+      timeoutId = window.setTimeout(() => setIsChartVisible(true), 80);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [isLoading, metrics]);
+
   async function setSuspension(user: AdminUser, isSuspended: boolean) {
     const reason = isSuspended
-      ? window.prompt('Suspension reason:', user.suspensionReason || 'Policy violation') ?? ''
+      ? window.prompt(
+          'Suspension reason:',
+          user.suspensionReason || 'Policy violation',
+        ) ?? ''
       : '';
 
     await apiPatchData(
@@ -134,120 +165,164 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
     await updateReport(report, 'actioned');
   }
 
+  const metricItems = [
+    ['Users', metrics?.totalUsers ?? 0],
+    ['Suspended', metrics?.suspendedUsers ?? 0],
+    ['Posts', metrics?.totalPosts ?? 0],
+    ['Reports', metrics?.totalReports ?? 0],
+    ['Open', metrics?.openReports ?? 0],
+  ] as const;
   const chartItems = [
-    ['Users', metrics?.totalUsers ?? 0, 'from-sky-500 to-cyan-400'],
-    ['Posts', metrics?.totalPosts ?? 0, 'from-emerald-500 to-teal-400'],
-    ['Reports', metrics?.totalReports ?? 0, 'from-amber-500 to-orange-400'],
-    ['Open', metrics?.openReports ?? 0, 'from-rose-500 to-pink-400'],
-    ['Suspended', metrics?.suspendedUsers ?? 0, 'from-violet-500 to-indigo-400'],
+    ['Users', metrics?.totalUsers ?? 0, 'from-sky-500 to-cyan-300'],
+    ['Posts', metrics?.totalPosts ?? 0, 'from-emerald-500 to-teal-300'],
+    ['Reports', metrics?.totalReports ?? 0, 'from-amber-500 to-orange-300'],
+    ['Open', metrics?.openReports ?? 0, 'from-rose-500 to-pink-300'],
+    ['Suspended', metrics?.suspendedUsers ?? 0, 'from-violet-500 to-indigo-300'],
   ] as const;
   const maxChartValue = Math.max(...chartItems.map((item) => item[1]), 1);
 
   return (
-    <section className="space-y-5 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent)] p-5">
-      {error && <p className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-300">{error}</p>}
+    <section className="space-y-5 p-5">
+      {error && (
+        <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-300">
+          {error}
+        </p>
+      )}
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-4 rounded-2xl border border-white/[0.07] bg-[#07101f]/70 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300/80">
-            Control room
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300/80">
+            Admin
           </p>
-          <h2 className="mt-1 text-2xl font-semibold text-white">Admin Dashboard</h2>
-          <p className="text-sm text-slate-500">
-            {isLoading ? 'Syncing live moderation data...' : `${reports.length} reports loaded`}
+          <h2 className="mt-1 text-2xl font-semibold text-white">
+            Control Center
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            {isLoading
+              ? 'Syncing platform data...'
+              : `${reports.length} reports in the current queue`}
           </p>
         </div>
-        <Button type="button" variant="secondary" onClick={onLogout}>
-          Sign Out
-        </Button>
+
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" onClick={loadAdminData}>
+            Refresh
+          </Button>
+          <Button type="button" variant="ghost" onClick={onLogout}>
+            Sign Out
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-5">
-        {[
-          ['Users', metrics?.totalUsers ?? 0],
-          ['Suspended', metrics?.suspendedUsers ?? 0],
-          ['Posts', metrics?.totalPosts ?? 0],
-          ['Reports', metrics?.totalReports ?? 0],
-          ['Open', metrics?.openReports ?? 0],
-        ].map(([label, value]) => (
-          <Card key={label} className="admin-pop-in overflow-hidden p-4 transition-colors hover:border-cyan-400/30 hover:bg-white/[0.05]">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {metricItems.map(([label, value]) => (
+          <Card
+            key={label}
+            className="admin-pop-in p-4 transition-colors hover:border-cyan-400/30 hover:bg-white/[0.05]"
+          >
             <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="text-xs uppercase tracking-wider text-slate-500">{label}</p>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {label}
+            </p>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
               <div
-                className="h-full rounded-full bg-cyan-400 transition-all duration-500"
-                style={{ width: `${Math.max(8, (Number(value) / maxChartValue) * 100)}%` }}
+                className="h-full rounded-full bg-cyan-400 transition-all duration-700 ease-out"
+                style={{
+                  width: isChartVisible
+                    ? `${Math.max(8, (value / maxChartValue) * 100)}%`
+                    : '0%',
+                }}
               />
             </div>
           </Card>
         ))}
       </div>
 
-      <Card className="admin-pop-in p-4">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h3 className="text-sm font-semibold text-white">Platform Statistics</h3>
-            <p className="mt-1 text-xs text-slate-500">Relative volume by category</p>
-          </div>
-          <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">
-            Live
-          </span>
-        </div>
-        <div className="mt-5 flex h-52 items-end gap-3">
-          {chartItems.map(([label, value, gradient]) => (
-            <div key={label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
-              <div className="flex h-40 w-full items-end rounded-lg bg-white/[0.03] px-2">
-                <div
-                  className={`admin-bar w-full rounded-t-lg bg-gradient-to-t ${gradient}`}
-                  style={{ height: `${Math.max(8, (value / maxChartValue) * 100)}%` }}
-                />
-              </div>
-              <p className="text-xs font-semibold text-white">{value}</p>
-              <p className="truncate text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="admin-pop-in space-y-3 p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold text-white">
-              Recent audit trail
-            </h3>
-            <p className="mt-1 text-xs text-slate-500">
-              Moderator and admin actions recorded by account.
-            </p>
-          </div>
-          <Button type="button" variant="ghost" onClick={loadAdminData}>
-            Refresh
-          </Button>
-        </div>
-
-        <div className="divide-y divide-white/[0.06]">
-          {auditLogs.slice(0, 12).map((log) => (
-            <div key={log.id} className="py-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-slate-100">
-                  {log.action.replace(/_/g, ' ')}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {new Date(log.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <p className="mt-1 text-xs text-slate-400">
-                {log.actorEmail} ({log.actorRole}) - {log.targetType}:{' '}
-                {log.targetId}
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+        <Card className="admin-pop-in p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-semibold text-white">
+                Platform Statistics
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Relative platform volume across users, content, and reports.
               </p>
             </div>
-          ))}
-          {!auditLogs.length && (
-            <p className="rounded-lg border border-dashed border-white/[0.08] p-6 text-center text-sm text-slate-500">
-              No moderation actions have been recorded yet.
-            </p>
-          )}
-        </div>
-      </Card>
+            <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+              Live
+            </span>
+          </div>
+
+          <div className="mt-6 flex h-56 items-end gap-3">
+            {chartItems.map(([label, value, gradient], index) => {
+              const height = Math.max(8, (value / maxChartValue) * 100);
+
+              return (
+                <div
+                  key={label}
+                  className="flex min-w-0 flex-1 flex-col items-center gap-2"
+                >
+                  <div className="flex h-44 w-full items-end rounded-lg border border-white/[0.05] bg-white/[0.03] px-2">
+                    <div
+                      className={`w-full rounded-t-lg bg-gradient-to-t ${gradient}`}
+                      style={{
+                        height: isChartVisible ? `${height}%` : '0%',
+                        transition:
+                          'height 760ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+                        transitionDelay: `${index * 90}ms`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs font-semibold text-white">{value}</p>
+                  <p className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    {label}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card className="admin-pop-in p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-white">
+                Recent Audit Trail
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Latest admin and moderator actions.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 max-h-72 divide-y divide-white/[0.06] overflow-y-auto pr-1">
+            {auditLogs.slice(0, 12).map((log) => (
+              <div key={log.id} className="py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="truncate text-sm font-semibold capitalize text-slate-100">
+                    {formatAction(log.action)}
+                  </p>
+                  <p className="shrink-0 text-[11px] text-slate-600">
+                    {formatDate(log.createdAt)}
+                  </p>
+                </div>
+                <p className="mt-1 truncate text-xs text-slate-400">
+                  {log.actorEmail} ({log.actorRole})
+                </p>
+                <p className="mt-1 truncate text-[11px] text-slate-600">
+                  {log.targetType}: {log.targetId}
+                </p>
+              </div>
+            ))}
+            {!auditLogs.length && (
+              <p className="rounded-lg border border-dashed border-white/[0.08] p-6 text-center text-sm text-slate-500">
+                No moderation actions recorded yet.
+              </p>
+            )}
+          </div>
+        </Card>
+      </div>
 
       <div className="flex rounded-xl border border-white/[0.08] bg-white/[0.03] p-1">
         {(['reports', 'users'] as const).map((panel) => (
@@ -268,28 +343,39 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
 
       {activePanel === 'users' && (
         <Card className="space-y-3 p-4">
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search users"
               className="min-w-0 flex-1 rounded-lg border border-white/[0.08] bg-[#051223] px-3 py-2 text-sm text-slate-100 outline-none"
             />
-            <Button type="button" onClick={loadAdminData}>Refresh</Button>
+            <Button type="button" onClick={loadAdminData}>
+              Search
+            </Button>
           </div>
 
           <div className="divide-y divide-white/[0.06]">
             {users.map((user) => (
-              <div key={user.id} className="admin-pop-in flex items-center justify-between gap-3 py-3">
+              <div
+                key={user.id}
+                className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-indigo-500 text-sm font-bold text-white">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-indigo-500 text-sm font-bold text-white">
                     {user.username.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{user.username}</p>
-                    <p className="truncate text-xs text-slate-500">{user.email} - {user.role}</p>
+                    <p className="truncate text-sm font-semibold text-white">
+                      {user.username}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {user.email} - {user.role}
+                    </p>
                     {user.isSuspended && (
-                      <p className="mt-1 text-xs text-rose-300">{user.suspensionReason || 'Suspended'}</p>
+                      <p className="mt-1 text-xs text-rose-300">
+                        {user.suspensionReason || 'Suspended'}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -313,16 +399,24 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
 
       {activePanel === 'reports' && (
         <Card className="space-y-3 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-white">Reports</h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-white">Reports</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Review, dismiss, remove content, or suspend reported users.
+              </p>
+            </div>
+
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsStatusMenuOpen((current) => !current)}
-                className="min-w-36 rounded-lg border border-white/[0.08] bg-[#051223] px-3 py-2 text-left text-sm font-semibold capitalize text-slate-100 transition hover:border-indigo-400/50"
+                className="min-w-40 rounded-lg border border-white/[0.08] bg-[#051223] px-3 py-2 text-left text-sm font-semibold capitalize text-slate-100 transition hover:border-cyan-400/50"
               >
                 {status}
-                <span className="float-right text-slate-500">{isStatusMenuOpen ? 'Up' : 'Down'}</span>
+                <span className="float-right text-slate-500">
+                  {isStatusMenuOpen ? 'Up' : 'Down'}
+                </span>
               </button>
 
               {isStatusMenuOpen && (
@@ -335,8 +429,10 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
                         setStatus(item);
                         setIsStatusMenuOpen(false);
                       }}
-                      className={`block w-full px-3 py-2 text-left text-sm capitalize transition hover:bg-indigo-500/10 ${
-                        status === item ? 'bg-indigo-500/20 text-indigo-200' : 'text-slate-300'
+                      className={`block w-full px-3 py-2 text-left text-sm capitalize transition hover:bg-cyan-500/10 ${
+                        status === item
+                          ? 'bg-cyan-500/20 text-cyan-200'
+                          : 'text-slate-300'
                       }`}
                     >
                       {item}
@@ -349,37 +445,64 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
 
           <div className="space-y-3">
             {reports.map((report) => (
-              <article key={report.id} className="admin-pop-in rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-cyan-400/30 hover:bg-white/[0.04]">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
+              <article
+                key={report.id}
+                className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 transition hover:border-cyan-400/30 hover:bg-white/[0.04]"
+              >
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold capitalize text-white">
                       {report.targetType} - {report.reason}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      by {report.reporter?.username ?? 'Unknown'} - {report.status}
+                      by {report.reporter?.username ?? 'Unknown'} -{' '}
+                      {report.status}
+                    </p>
+                    {report.details && (
+                      <p className="mt-3 text-sm leading-6 text-slate-300">
+                        {report.details}
+                      </p>
+                    )}
+                    <p className="mt-2 break-all text-xs text-slate-600">
+                      {report.targetId}
                     </p>
                   </div>
+
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="secondary" onClick={() => void updateReport(report, 'reviewed')}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => void updateReport(report, 'reviewed')}
+                    >
                       Review
                     </Button>
-                    <Button type="button" variant="ghost" onClick={() => void updateReport(report, 'dismissed')}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => void updateReport(report, 'dismissed')}
+                    >
                       Dismiss
                     </Button>
                     {report.targetType !== 'user' && (
-                      <Button type="button" variant="danger" onClick={() => void removeTarget(report)}>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => void removeTarget(report)}
+                      >
                         Remove
                       </Button>
                     )}
                     {report.targetType === 'user' && (
-                      <Button type="button" variant="danger" onClick={() => void suspendReportedUser(report)}>
+                      <Button
+                        type="button"
+                        variant="danger"
+                        onClick={() => void suspendReportedUser(report)}
+                      >
                         Suspend
                       </Button>
                     )}
                   </div>
                 </div>
-                {report.details && <p className="mt-3 text-sm text-slate-300">{report.details}</p>}
-                <p className="mt-2 break-all text-xs text-slate-600">{report.targetId}</p>
               </article>
             ))}
             {!reports.length && (
