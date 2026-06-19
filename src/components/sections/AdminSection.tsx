@@ -7,11 +7,13 @@ import {
   apiPatchData,
 } from '@/lib/apiClient';
 import {
+  decodeAdminAuditLogs,
   decodeAdminMetrics,
   decodeAdminReports,
   decodeAdminUser,
   decodeAdminUsers,
   decodeReportStatusUpdate,
+  type AdminAuditLog,
   type AdminMetrics,
   type AdminReport,
   type AdminUser,
@@ -23,6 +25,7 @@ const reportStatuses = ['open', 'reviewed', 'dismissed', 'actioned', 'all'];
 
 export function AdminSection({ onLogout }: { onLogout: () => void }) {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
+  const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [reports, setReports] = useState<AdminReport[]>([]);
   const [query, setQuery] = useState('');
@@ -36,23 +39,34 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
     try {
       setIsLoading(true);
       setError('');
-      const [nextMetrics, nextUsers, nextReports] = await Promise.all([
-        apiJsonData('/admin/metrics', 'Admin metrics failed', decodeAdminMetrics),
-        apiJsonData(
-          `/admin/users${query ? `?q=${encodeURIComponent(query)}` : ''}`,
-          'Admin users failed',
-          decodeAdminUsers,
-        ),
-        apiJsonData(
-          `/admin/reports?status=${status}`,
-          'Admin reports failed',
-          decodeAdminReports,
-        ),
-      ]);
+      const [nextMetrics, nextUsers, nextReports, nextAuditLogs] =
+        await Promise.all([
+          apiJsonData(
+            '/admin/metrics',
+            'Admin metrics failed',
+            decodeAdminMetrics,
+          ),
+          apiJsonData(
+            `/admin/users${query ? `?q=${encodeURIComponent(query)}` : ''}`,
+            'Admin users failed',
+            decodeAdminUsers,
+          ),
+          apiJsonData(
+            `/admin/reports?status=${status}`,
+            'Admin reports failed',
+            decodeAdminReports,
+          ),
+          apiJsonData(
+            '/admin/audit-logs',
+            'Admin audit logs failed',
+            decodeAdminAuditLogs,
+          ),
+        ]);
 
       setMetrics(nextMetrics);
       setUsers(nextUsers);
       setReports(nextReports);
+      setAuditLogs(nextAuditLogs);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Admin data failed');
     } finally {
@@ -192,6 +206,46 @@ export function AdminSection({ onLogout }: { onLogout: () => void }) {
               <p className="truncate text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
             </div>
           ))}
+        </div>
+      </Card>
+
+      <Card className="admin-pop-in space-y-3 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-white">
+              Recent audit trail
+            </h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Moderator and admin actions recorded by account.
+            </p>
+          </div>
+          <Button type="button" variant="ghost" onClick={loadAdminData}>
+            Refresh
+          </Button>
+        </div>
+
+        <div className="divide-y divide-white/[0.06]">
+          {auditLogs.slice(0, 12).map((log) => (
+            <div key={log.id} className="py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold text-slate-100">
+                  {log.action.replace(/_/g, ' ')}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {new Date(log.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <p className="mt-1 text-xs text-slate-400">
+                {log.actorEmail} ({log.actorRole}) - {log.targetType}:{' '}
+                {log.targetId}
+              </p>
+            </div>
+          ))}
+          {!auditLogs.length && (
+            <p className="rounded-lg border border-dashed border-white/[0.08] p-6 text-center text-sm text-slate-500">
+              No moderation actions have been recorded yet.
+            </p>
+          )}
         </div>
       </Card>
 

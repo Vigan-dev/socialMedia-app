@@ -93,6 +93,18 @@ export type AdminReport = {
   targetType: 'post' | 'comment' | 'user';
 };
 
+export type AdminAuditLog = {
+  action: string;
+  actorEmail: string;
+  actorId: string | null;
+  actorRole: string;
+  createdAt: string;
+  id: string;
+  metadata: Record<string, unknown>;
+  targetId: string;
+  targetType: string;
+};
+
 export type ReportStatusUpdate = {
   id: string;
   status: ReportStatus;
@@ -604,6 +616,31 @@ export function decodeAdminReport(input: unknown): AdminReport {
 }
 
 export const decodeAdminReports = decodeArrayOf('Admin reports', decodeAdminReport);
+
+export function decodeAdminAuditLog(input: unknown): AdminAuditLog {
+  const data = objectRecord(input, 'Admin audit log');
+
+  return {
+    id: nonEmptyString(data.id, 'Admin audit log id'),
+    action: stringValue(data.action, 'Admin audit log action'),
+    actorEmail: stringValue(data.actorEmail, 'Admin audit log actorEmail'),
+    actorId:
+      data.actorId === null
+        ? null
+        : optionalNonEmptyString(data.actorId, 'Admin audit log actorId') ??
+          null,
+    actorRole: stringValue(data.actorRole, 'Admin audit log actorRole'),
+    createdAt: stringValue(data.createdAt, 'Admin audit log createdAt'),
+    metadata: objectRecord(data.metadata, 'Admin audit log metadata'),
+    targetId: nonEmptyString(data.targetId, 'Admin audit log targetId'),
+    targetType: stringValue(data.targetType, 'Admin audit log targetType'),
+  };
+}
+
+export const decodeAdminAuditLogs = decodeArrayOf(
+  'Admin audit logs',
+  decodeAdminAuditLog,
+);
 
 export function decodeReportStatusUpdate(input: unknown): ReportStatusUpdate {
   const data = objectRecord(input, 'Report status update');
