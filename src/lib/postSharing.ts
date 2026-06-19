@@ -7,8 +7,10 @@ export type SharePostInput = {
 export type SharePostResult = 'copied' | 'shared' | 'cancelled' | 'failed';
 
 export function buildPostShareUrl(postId: string) {
-  const url = new URL(window.location.origin);
-  url.hash = `post-${encodeURIComponent(postId)}`;
+  const url = new URL(
+    `/posts/${encodeURIComponent(postId)}`,
+    window.location.origin,
+  );
 
   return url.toString();
 }

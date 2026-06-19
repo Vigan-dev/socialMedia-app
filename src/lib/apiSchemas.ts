@@ -42,6 +42,18 @@ export type SupportChatResponse = {
   reply: string;
 };
 
+export type PublicProfile = {
+  avatarUrl: string | null;
+  bio: string;
+  followersCount: number;
+  followingCount: number;
+  handle: string;
+  id: string;
+  name: string;
+  role: UserRole;
+  status: UserStatus | null;
+};
+
 export type ChatSession = {
   _id: string;
   firstMessage: string;
@@ -328,6 +340,31 @@ export function decodeNetworkUser(input: unknown): NetworkUser {
 }
 
 export const decodeNetworkUsers = decodeArrayOf('Network users', decodeNetworkUser);
+
+export function decodePublicProfile(input: unknown): PublicProfile {
+  const data = objectRecord(input, 'Public profile');
+
+  return {
+    id: nonEmptyString(data.id, 'Public profile id'),
+    name: stringValue(data.name, 'Public profile name'),
+    handle: stringValue(data.handle, 'Public profile handle'),
+    role: literalUnion(data.role, userRoles, 'Public profile role'),
+    avatarUrl: optionalNullableString(data.avatarUrl, 'Public profile avatarUrl'),
+    bio: stringValue(data.bio, 'Public profile bio'),
+    followersCount: nonNegativeInteger(
+      data.followersCount,
+      'Public profile followersCount',
+    ),
+    followingCount: nonNegativeInteger(
+      data.followingCount,
+      'Public profile followingCount',
+    ),
+    status:
+      data.status === null
+        ? null
+        : literalUnion(data.status, userStatuses, 'Public profile status'),
+  };
+}
 
 export function decodeNotification(input: unknown): NotificationItem {
   const data = objectRecord(input, 'Notification');
