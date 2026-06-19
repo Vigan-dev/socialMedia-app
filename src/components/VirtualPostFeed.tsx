@@ -38,7 +38,7 @@ type VirtualPostFeedProps = {
   searchQuery: string;
 };
 
-const rowHeight = 178;
+const rowHeight = 420;
 const overscan = 4;
 
 export function VirtualPostFeed({

@@ -39,6 +39,7 @@ export interface Post {
   content: string;
   time: string;
   likes: number;
+  mediaUrls?: string[];
   comments: number;
   commentItems?: PostComment[];
   isLiked?: boolean;

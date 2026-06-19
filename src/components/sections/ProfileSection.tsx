@@ -17,6 +17,7 @@ import type {
 import { apiJsonData } from '@/lib/apiClient';
 import { decodeAvailability } from '@/lib/apiSchemas';
 import { validateBio, validateUsername } from '@/lib/formValidation';
+import { uploadAvatarImage } from '@/lib/uploads';
 import type { NetworkUser, Post, ReportReason } from '@/types/feed';
 
 const avatarSize = 320;
@@ -203,9 +204,10 @@ export function ProfileSection({
     try {
       const source = await readFileAsDataUrl(file);
       const resizedAvatar = await resizeAvatar(source);
-      setDraftAvatarUrl(resizedAvatar);
+      const uploadedAvatarUrl = await uploadAvatarImage(resizedAvatar);
+      setDraftAvatarUrl(uploadedAvatarUrl);
       setFieldErrors((current) => ({ ...current, avatar: '' }));
-      setStatus('Avatar preview updated. Save changes to keep it.');
+      setStatus('Avatar uploaded. Save changes to keep it.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Avatar preview failed.');
     } finally {

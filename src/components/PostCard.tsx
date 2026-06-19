@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/ActionModals';
 import { HighlightedText } from '@/components/HighlightedText';
 import { PostComments } from '@/components/posts/PostComments';
+import { PostMediaGrid } from '@/components/posts/PostMediaGrid';
 import { AppIcon } from '@/components/ui/AppIcon';
 import { sharePost, type SharePostResult } from '@/lib/postSharing';
 import type { Post, ReportReason, ReportTargetType } from '@/types/feed';
@@ -249,6 +250,8 @@ export const PostCard = React.memo(function PostCard({
             <HighlightedText text={post.content} />
           </p>
         )}
+
+        <PostMediaGrid mediaUrls={post.mediaUrls} />
 
         <div className="flex flex-wrap gap-3 text-xs font-medium text-slate-600">
           <button

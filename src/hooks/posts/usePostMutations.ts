@@ -18,9 +18,12 @@ type UsePostMutationsInput = {
   clearComposerDraft: () => void;
   clearError: () => void;
   composerInput: string;
+  composerMediaUrls: string[];
   feedMode: FeedMode;
+  resetComposerMediaUrls: () => void;
   resetComposerInput: (nextValue?: string) => void;
   setComposerInput: Dispatch<SetStateAction<string>>;
+  setComposerMediaUrls: Dispatch<SetStateAction<string[]>>;
   setPosts: Dispatch<SetStateAction<Post[]>>;
   showError: (fallback: string, error?: unknown) => void;
 };
@@ -29,9 +32,12 @@ export function usePostMutations({
   clearComposerDraft,
   clearError,
   composerInput,
+  composerMediaUrls,
   feedMode,
+  resetComposerMediaUrls,
   resetComposerInput,
   setComposerInput,
+  setComposerMediaUrls,
   setPosts,
   showError,
 }: UsePostMutationsInput) {
@@ -45,7 +51,7 @@ export function usePostMutations({
 
   const createPost = async (username: string, accentColor: string) => {
     const content = composerInput.trim();
-    if (!content) return;
+    if (!content && composerMediaUrls.length === 0) return;
     clearError();
 
     const optimisticPost: Post = {
@@ -57,6 +63,7 @@ export function usePostMutations({
       content,
       time: 'Just now',
       likes: 0,
+      mediaUrls: composerMediaUrls,
       comments: 0,
       isLiked: false,
     };
@@ -65,12 +72,14 @@ export function usePostMutations({
       setPosts((current) => [optimisticPost, ...current]);
     }
     resetComposerInput();
+    resetComposerMediaUrls();
 
     try {
       const createdPost = await apiPostData(
         '/posts',
         {
           content,
+          mediaUrls: composerMediaUrls,
         },
         'Failed to create post',
         decodePost,
@@ -91,6 +100,7 @@ export function usePostMutations({
         );
       }
       setComposerInput(content);
+      setComposerMediaUrls(composerMediaUrls);
       showError('Your post was not published. Please try again.', error);
     }
   };

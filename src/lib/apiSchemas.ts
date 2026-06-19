@@ -111,6 +111,10 @@ export type MessageResponse = {
   message: string;
 };
 
+export type UploadResponse = {
+  url: string;
+};
+
 const userStatuses = ['available', 'away', 'busy'] as const;
 const userRoles = ['admin', 'moderator', 'user'] as const;
 const messagePrivacyValues = ['everyone', 'following', 'none'] as const;
@@ -292,6 +296,9 @@ export function decodePost(input: unknown): Post {
     content: stringValue(data.content, 'Post content'),
     time: stringValue(data.time, 'Post time'),
     likes: nonNegativeInteger(data.likes, 'Post likes'),
+    mediaUrls: optionalArray(data.mediaUrls, 'Post mediaUrls', (item) =>
+      stringValue(item, 'Post media URL'),
+    ),
     comments: nonNegativeInteger(data.comments, 'Post comments'),
     commentItems: optionalArray(data.commentItems, 'Post commentItems', decodePostComment),
     isLiked: optionalBoolean(data.isLiked, 'Post isLiked'),
@@ -504,6 +511,14 @@ export function decodeMessageResponse(input: unknown): MessageResponse {
 
   return {
     message: stringValue(data.message, 'Message response message'),
+  };
+}
+
+export function decodeUploadResponse(input: unknown): UploadResponse {
+  const data = objectRecord(input, 'Upload response');
+
+  return {
+    url: nonEmptyString(data.url, 'Upload URL'),
   };
 }
 

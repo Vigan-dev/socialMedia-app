@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { HighlightedText } from '@/components/HighlightedText';
+import { PostMediaGrid } from '@/components/posts/PostMediaGrid';
 import { ConfirmActionModal } from '@/components/ui/ActionModals';
 import { AppIcon } from '@/components/ui/AppIcon';
 import { sharePost, type SharePostResult } from '@/lib/postSharing';
@@ -112,6 +113,8 @@ export function ProfilePostCard({
             <HighlightedText text={post.content} />
           </p>
         )}
+
+        <PostMediaGrid mediaUrls={post.mediaUrls} />
 
         <div className="mt-3 flex gap-4 text-xs text-slate-500">
           <span>{post.likes} likes</span>

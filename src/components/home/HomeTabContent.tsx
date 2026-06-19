@@ -1,5 +1,8 @@
 'use client';
 
+import type { ChangeEvent } from 'react';
+import { useRef, useState } from 'react';
+import Image from 'next/image';
 import { UserAvatar } from '@/components/UserAvatar';
 import { VirtualPostFeed } from '@/components/VirtualPostFeed';
 import { AdminSection } from '@/components/sections/AdminSection';
@@ -17,6 +20,7 @@ import type { useChat } from '@/hooks/useChat';
 import type { useNotifications } from '@/hooks/useNotifications';
 import type { usePosts } from '@/hooks/usePosts';
 import type { useThemePreference } from '@/hooks/useThemePreference';
+import { uploadPostImage } from '@/lib/uploads';
 import { HomeHero } from './HomeHero';
 import { InlineError } from './InlineError';
 
@@ -53,6 +57,43 @@ export function HomeTabContent({
   posts,
   theme,
 }: HomeTabContentProps) {
+  const postMediaInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingPostMedia, setIsUploadingPostMedia] = useState(false);
+  const [postMediaError, setPostMediaError] = useState('');
+
+  const handlePostMediaChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    if (files.length === 0) return;
+
+    const remainingSlots = Math.max(0, 4 - posts.composerMediaUrls.length);
+    if (remainingSlots === 0) {
+      setPostMediaError('Remove an image before adding another.');
+      return;
+    }
+
+    try {
+      setIsUploadingPostMedia(true);
+      setPostMediaError('');
+      const uploadedUrls = await Promise.all(
+        files.slice(0, remainingSlots).map((file) => uploadPostImage(file)),
+      );
+
+      posts.setComposerMediaUrls((current) => [
+        ...current,
+        ...uploadedUrls,
+      ]);
+    } catch (error) {
+      setPostMediaError(
+        error instanceof Error ? error.message : 'Image upload failed.',
+      );
+    } finally {
+      setIsUploadingPostMedia(false);
+    }
+  };
+
   return (
     <main className="relative min-h-screen min-w-0 border-r border-white/[0.05] bg-[#060911]/50">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.05] bg-[#060911]/80 p-4 shadow-sm backdrop-blur-xl">
@@ -98,20 +139,78 @@ export function HomeTabContent({
                           'Draft restored'}
                         {posts.composerDraftStatus === 'saved' &&
                           'Draft saved'}
+                        {isUploadingPostMedia && 'Uploading image...'}
+                        {postMediaError}
                       </p>
 
-                      <Button
-                        onClick={onPublishPost}
-                        disabled={
-                          !auth.isAuthReady ||
-                          !auth.isLoggedIn ||
-                          !posts.composerInput.trim()
-                        }
-                        className={`px-5 py-1.5 text-xs ${theme.themeAccent.split(' ')[0]}`}
-                      >
-                        Publish
-                      </Button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <input
+                          ref={postMediaInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handlePostMediaChange}
+                          className="sr-only"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => postMediaInputRef.current?.click()}
+                          disabled={
+                            isUploadingPostMedia ||
+                            posts.composerMediaUrls.length >= 4
+                          }
+                          className="px-3 py-1.5 text-xs"
+                        >
+                          Image
+                        </Button>
+
+                        <Button
+                          onClick={onPublishPost}
+                          disabled={
+                            !auth.isAuthReady ||
+                            !auth.isLoggedIn ||
+                            isUploadingPostMedia ||
+                            (!posts.composerInput.trim() &&
+                              posts.composerMediaUrls.length === 0)
+                          }
+                          className={`px-5 py-1.5 text-xs ${theme.themeAccent.split(' ')[0]}`}
+                        >
+                          Publish
+                        </Button>
+                      </div>
                     </div>
+
+                    {posts.composerMediaUrls.length > 0 && (
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {posts.composerMediaUrls.map((url, index) => (
+                          <div
+                            key={`${url}-${index}`}
+                            className="relative aspect-video overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900"
+                          >
+                            <Image
+                              src={url}
+                              alt="Selected post media"
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 45vw, 320px"
+                              unoptimized
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                posts.setComposerMediaUrls((current) =>
+                                  current.filter((item) => item !== url),
+                                )
+                              }
+                              className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HighlightedText } from '@/components/HighlightedText';
+import { PostMediaGrid } from '@/components/posts/PostMediaGrid';
 import { UserAvatar } from '@/components/UserAvatar';
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { Post } from '@/types/feed';
@@ -55,6 +56,8 @@ export function PublicPostCard({ post }: PublicPostCardProps) {
           <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-300">
             <HighlightedText text={post.content} />
           </p>
+
+          <PostMediaGrid mediaUrls={post.mediaUrls} />
 
           <div className="mt-4 flex flex-wrap gap-4 text-xs font-medium text-slate-500">
             <span className="inline-flex items-center gap-2">
