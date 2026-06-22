@@ -22,3 +22,36 @@ export function PostSkeleton() {
     </div>
   );
 }
+
+export function ListItemSkeleton({ lines = 2 }: { lines?: 1 | 2 | 3 }) {
+  return (
+    <div className="app-surface flex gap-3 rounded-2xl p-4">
+      <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <Skeleton className="h-3 w-2/5" />
+        {Array.from({ length: lines }, (_, index) => (
+          <Skeleton
+            key={index}
+            className={index === lines - 1 ? 'h-3 w-3/5' : 'h-3 w-full'}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function MessageSkeleton() {
+  return (
+    <div className="space-y-4 p-4">
+      <div className="flex justify-start">
+        <Skeleton className="h-11 w-2/3 rounded-2xl" />
+      </div>
+      <div className="flex justify-end">
+        <Skeleton className="h-11 w-1/2 rounded-2xl" />
+      </div>
+      <div className="flex justify-start">
+        <Skeleton className="h-16 w-3/4 rounded-2xl" />
+      </div>
+    </div>
+  );
+}

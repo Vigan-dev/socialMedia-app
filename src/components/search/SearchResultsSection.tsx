@@ -41,9 +41,12 @@ export function SearchResultsSection({
       <PostSearchResultsSection posts={filteredPosts} />
 
       {!hasResults && (
-        <div className="rounded-xl border border-dashed border-white/[0.05] py-10 text-center">
-          <p className="text-xs font-medium text-slate-400">
+        <div className="app-surface rounded-3xl border-dashed px-4 py-8 text-center">
+          <p className="text-sm font-semibold text-slate-200">
             No results found
+          </p>
+          <p className="mx-auto mt-2 max-w-[18rem] text-xs leading-5 text-slate-500">
+            Try a name, handle, topic, or phrase from a post.
           </p>
         </div>
       )}

@@ -16,7 +16,7 @@ type NetworkUserListSectionProps = {
 };
 
 const headingToneClass = {
-  indigo: 'border-b border-white/[0.05] pb-2 pl-1 text-indigo-400',
+  indigo: 'border-b border-white/[0.05] pb-2 pl-1 text-cyan-300',
   slate: 'flex items-center gap-2 text-slate-500',
 };
 
@@ -39,7 +39,7 @@ export function NetworkUserListSection({
         className={`${headingToneClass[headingTone]} text-[10px] font-bold uppercase tracking-widest`}
       >
         {headingTone === 'slate' && (
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
         )}
         {heading}
       </h3>
@@ -62,7 +62,7 @@ export function NetworkUserListSection({
 
   if (isCard) {
     return (
-      <div className="space-y-4 rounded-2xl border border-white/[0.04] bg-gradient-to-b from-[#0c111d]/70 to-transparent p-5 shadow-lg">
+      <div className="app-surface space-y-4 rounded-3xl p-5">
         {content}
       </div>
     );

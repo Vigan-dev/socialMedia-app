@@ -2,6 +2,10 @@
 
 import React from 'react';
 import { UserAvatar } from '@/components/UserAvatar';
+import {
+  ListItemSkeleton,
+  MessageSkeleton,
+} from '@/components/ui/Skeleton';
 
 export interface MessageThread {
   handle: string;
@@ -99,28 +103,36 @@ export function MessagesSection({
 
   if (isLoading) {
     return (
-      <div className="space-y-3 p-5">
-        {Array.from({ length: 4 }, (_, index) => (
-          <div key={index} className="h-16 animate-pulse rounded-xl bg-white/[0.03]" />
-        ))}
+      <div
+        className="grid h-[calc(100vh-57px)] min-h-0 min-w-0 grid-cols-1 overflow-hidden md:grid-cols-[280px_minmax(0,1fr)]"
+        aria-label="Loading messages"
+      >
+        <div className="space-y-3 border-b border-white/[0.05] p-4 md:border-b-0 md:border-r">
+          {Array.from({ length: 4 }, (_, index) => (
+            <ListItemSkeleton key={index} lines={1} />
+          ))}
+        </div>
+        <MessageSkeleton />
       </div>
     );
   }
 
   if (threads.length === 0) {
     return (
-      <div className="p-10 text-center">
-        <p className="text-sm font-medium text-slate-400">No messages yet</p>
-        <p className="mt-1 text-xs text-slate-600">
-          Search for a profile and choose Message to start a conversation.
-        </p>
+      <div className="p-4">
+        <div className="app-surface rounded-3xl border-dashed p-8 text-center">
+          <p className="text-sm font-semibold text-slate-200">No messages yet</p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            Search for a profile and choose Message to start a conversation.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid h-[calc(100vh-57px)] min-h-0 min-w-0 overflow-hidden grid-cols-1 md:grid-cols-[280px_minmax(0,1fr)]">
-      <div className="min-h-0 min-w-0 overflow-y-auto border-b border-white/[0.05] md:border-b-0 md:border-r">
+    <div className="grid h-[calc(100vh-57px)] min-h-0 min-w-0 grid-cols-1 overflow-hidden md:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="custom-scrollbar min-h-0 min-w-0 overflow-y-auto border-b border-white/[0.05] md:border-b-0 md:border-r">
         <div className="sticky top-0 z-[1] border-b border-white/[0.05] bg-[#060911]/95 p-3 backdrop-blur">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -139,55 +151,61 @@ export function MessagesSection({
             value={conversationSearch}
             onChange={(event) => setConversationSearch(event.target.value)}
             placeholder="Search conversations..."
-            className="mt-3 w-full rounded-xl border border-white/[0.06] bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-indigo-500/50"
+            aria-label="Search conversations"
+            className="mt-3 w-full rounded-xl border border-white/[0.06] bg-slate-950 px-3 py-2 text-xs text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/20"
           />
         </div>
 
         {filteredThreads.length === 0 ? (
-          <div className="p-5 text-sm text-slate-500">
-            No conversations match your search.
-          </div>
-        ) : filteredThreads.map((thread) => (
-          <button
-            key={thread.id}
-            type="button"
-            onClick={() => setActiveThreadId(thread.id)}
-            className={`flex w-full min-w-0 gap-3 p-4 text-left transition ${
-              activeThreadId === thread.id
-                ? 'bg-white/[0.04]'
-                : 'hover:bg-white/[0.02]'
-            }`}
-          >
-            <UserAvatar
-              avatarUrl={thread.participant.avatarUrl}
-              username={thread.user}
-            />
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="truncate text-xs font-bold text-slate-200">
-                  {thread.user}
-                </p>
-                <span
-                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                    statusStyles[thread.participant.status]
-                  }`}
-                />
-              </div>
-              <p className="mt-1 truncate text-[11px] text-slate-500">
-                {thread.typingUsers?.length
-                  ? `${thread.typingUsers[0]} is typing...`
-                  : thread.lastMessage}
-              </p>
+          <div className="p-4">
+            <div className="app-surface rounded-2xl border-dashed p-5 text-center text-sm text-slate-500">
+              No conversations match your search.
             </div>
+          </div>
+        ) : (
+          filteredThreads.map((thread) => (
+            <button
+              key={thread.id}
+              type="button"
+              onClick={() => setActiveThreadId(thread.id)}
+              aria-current={activeThreadId === thread.id ? 'true' : undefined}
+              className={`pressable flex w-full min-w-0 gap-3 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-300 ${
+                activeThreadId === thread.id
+                  ? 'bg-cyan-400/[0.07]'
+                  : 'hover:bg-white/[0.03]'
+              }`}
+            >
+              <UserAvatar
+                avatarUrl={thread.participant.avatarUrl}
+                username={thread.user}
+              />
 
-            {thread.unreadCount > 0 && (
-              <span className="rounded-full bg-indigo-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                {thread.unreadCount}
-              </span>
-            )}
-          </button>
-        ))}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="truncate text-xs font-bold text-slate-200">
+                    {thread.user}
+                  </p>
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                      statusStyles[thread.participant.status]
+                    }`}
+                  />
+                </div>
+                <p className="mt-1 truncate text-[11px] text-slate-500">
+                  {thread.typingUsers?.length
+                    ? `${thread.typingUsers[0]} is typing...`
+                    : thread.lastMessage}
+                </p>
+              </div>
+
+              {thread.unreadCount > 0 && (
+                <span className="rounded-full bg-indigo-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {thread.unreadCount}
+                </span>
+              )}
+            </button>
+          ))
+        )}
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-col overflow-hidden bg-slate-950/20">
@@ -271,13 +289,14 @@ export function MessagesSection({
               }
             }}
             placeholder="Write a message..."
-            className="min-w-0 flex-1 rounded-lg border border-white/[0.06] bg-slate-900 px-3 py-2 text-sm text-slate-200 outline-none focus:border-indigo-500/50"
+            aria-label="Write a message"
+            className="min-w-0 flex-1 rounded-xl border border-white/[0.06] bg-slate-900 px-3 py-2 text-sm text-slate-200 outline-none transition placeholder:text-slate-600 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/20"
           />
           <button
             type="button"
             onClick={onSendMessage}
             disabled={!chatInput.trim()}
-            className={`rounded-lg px-4 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 ${themeAccent.split(' ')[0]}`}
+            className={`pressable rounded-xl px-4 py-2 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:cursor-not-allowed disabled:opacity-40 ${themeAccent.split(' ')[0]}`}
           >
             Send
           </button>

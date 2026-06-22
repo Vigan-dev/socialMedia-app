@@ -14,7 +14,7 @@ export function PostSearchResultsSection({
 
   return (
     <div className="space-y-3">
-      <h3 className="border-b border-white/[0.05] pb-2 pl-1 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
+      <h3 className="border-b border-white/[0.05] pb-2 pl-1 text-[10px] font-bold uppercase tracking-widest text-cyan-300">
         Content Threads
       </h3>
 
@@ -22,7 +22,7 @@ export function PostSearchResultsSection({
         {posts.slice(0, 3).map((post) => (
           <div
             key={post.id}
-            className="min-w-0 rounded-lg border border-white/[0.03] bg-[#0c111d]/40 p-3 transition hover:border-white/[0.1]"
+            className="interactive-surface min-w-0 rounded-2xl border border-white/[0.055] bg-white/[0.02] p-3"
           >
             <p className="mb-1 text-[10px] font-medium text-slate-400">
               {post.user}

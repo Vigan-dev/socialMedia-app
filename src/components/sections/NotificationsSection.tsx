@@ -3,6 +3,7 @@
 import React from 'react';
 import { HighlightedText } from '@/components/HighlightedText';
 import { UserAvatar } from '@/components/UserAvatar';
+import { ListItemSkeleton } from '@/components/ui/Skeleton';
 
 export interface NotificationItem {
   id: string;
@@ -79,12 +80,9 @@ export function NotificationsSection({
 
   if (isLoading) {
     return (
-      <div className="space-y-3 p-5">
+      <div className="space-y-3 p-4" aria-label="Loading notifications">
         {Array.from({ length: 4 }, (_, index) => (
-          <div
-            key={index}
-            className="h-20 animate-pulse rounded-xl bg-white/[0.03]"
-          />
+          <ListItemSkeleton key={index} lines={2} />
         ))}
       </div>
     );
@@ -92,68 +90,79 @@ export function NotificationsSection({
 
   if (totalCount === 0) {
     return (
-      <div className="p-10 text-center">
-        <p className="text-sm font-medium text-slate-400">No notifications yet</p>
-        <p className="mt-1 text-xs text-slate-600">
-          Likes, comments, follows, and mentions will appear here.
-        </p>
+      <div className="p-4">
+        <div className="app-surface rounded-3xl border-dashed p-8 text-center">
+          <p className="text-sm font-semibold text-slate-200">
+            No notifications yet
+          </p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            Likes, comments, follows, and mentions will appear here.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="border-b border-white/[0.05] px-5 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            {unreadCount} unread
-          </p>
+      <div className="px-4 pb-4 pt-1">
+        <div className="app-surface rounded-3xl p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-200/70">
+              {unreadCount} unread
+            </p>
 
-          <button
-            type="button"
-            onClick={onMarkAllRead}
-            disabled={unreadCount === 0}
-            className="rounded-full border border-white/[0.08] px-3 py-1 text-xs font-medium text-slate-300 transition hover:bg-white/[0.04] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Mark all read
-          </button>
-        </div>
-
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {filterOptions.map((option) => (
             <button
-              key={option.id}
               type="button"
-              onClick={() => onFilterChange(option.id)}
-              className={`whitespace-nowrap rounded-full border px-3 py-1 text-xs font-medium transition ${
-                filter === option.id
-                  ? 'border-indigo-400/70 bg-indigo-500/15 text-indigo-100'
-                  : 'border-white/[0.08] text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
-              }`}
+              onClick={onMarkAllRead}
+              disabled={unreadCount === 0}
+              className="pressable rounded-full border border-white/[0.08] px-3 py-1 text-xs font-semibold text-slate-300 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {option.label}
+              Mark all read
             </button>
-          ))}
+          </div>
+
+          <div className="custom-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
+            {filterOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => onFilterChange(option.id)}
+                aria-pressed={filter === option.id}
+                className={`pressable whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
+                  filter === option.id
+                    ? 'border-cyan-300/50 bg-cyan-400/12 text-cyan-100'
+                    : 'border-white/[0.08] text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {items.length === 0 && (
-        <div className="p-10 text-center">
-          <p className="text-sm font-medium text-slate-400">
-            No notifications match this filter
-          </p>
-          <p className="mt-1 text-xs text-slate-600">
-            Switch filters to see other notification categories.
-          </p>
+        <div className="p-4">
+          <div className="app-surface rounded-3xl border-dashed p-8 text-center">
+            <p className="text-sm font-semibold text-slate-200">
+              No notifications match this filter
+            </p>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-500">
+              Switch filters to see other notification categories.
+            </p>
+          </div>
         </div>
       )}
 
-      <div className="divide-y divide-white/[0.03]">
+      <div className="space-y-3 px-4 pb-4">
         {items.map((item) => (
           <div
             key={item.id}
-            className={`flex gap-4 p-5 transition hover:bg-white/[0.02] ${
-              item.read ? 'bg-transparent' : 'bg-indigo-500/[0.04]'
+            className={`interactive-surface flex gap-4 rounded-2xl border p-4 ${
+              item.read
+                ? 'border-white/[0.055] bg-white/[0.015]'
+                : 'border-cyan-300/15 bg-cyan-400/[0.045]'
             }`}
           >
             <UserAvatar
@@ -168,7 +177,7 @@ export function NotificationsSection({
                 </span>
 
                 {!item.read && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
                 )}
               </div>
 
