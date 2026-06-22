@@ -133,243 +133,255 @@ export const PostCard = React.memo(function PostCard({
 
   return (
     <>
-    <article
-      id={`post-${post.id}`}
-      className="feed-card flex scroll-mt-24 gap-4 border-b border-white/[0.05] bg-[#0c111d]/10 p-5 transition duration-200 hover:bg-[#0c111d]/40"
-    >
-      {resolvedAvatarUrl ? (
-        <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-white/[0.1] shadow-sm">
-          <Image
-            src={resolvedAvatarUrl}
-            alt={`${post.user} avatar`}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-lg bg-gradient-to-tr ${post.avatarBg} text-xs font-bold text-white shadow-sm`}
-        >
-          {initials}
-        </div>
-      )}
-
-      <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-wrap items-baseline gap-2">
-            <span className="truncate text-sm font-semibold text-slate-200 transition hover:text-indigo-400">
-              {post.user}
-            </span>
-            <span className="truncate text-xs text-slate-600">{post.handle}</span>
-            <span className="text-xs text-slate-700">-</span>
-            <span className="shrink-0 text-xs text-slate-500">{post.time}</span>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-          {post.isOwnPost && (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  setDraftContent(post.content);
-                  setIsEditing((current) => !current);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3 py-1 text-[11px] font-semibold text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-              >
-                <AppIcon name="edit" className="h-3.5 w-3.5" />
-                {isEditing ? 'Cancel' : 'Edit'}
-              </button>
-              <button
-                type="button"
-                onClick={deletePost}
-                className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/20 px-3 py-1 text-[11px] font-semibold text-rose-300 transition-colors hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-              >
-                <AppIcon name="trash" className="h-3.5 w-3.5" />
-                Delete
-              </button>
-            </>
-          )}
-
-          {canFollow && (
-            <button
-              type="button"
-              onClick={() => onToggleFollow(post.authorId!)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
-                post.isFollowing
-                  ? 'border-white/[0.08] text-slate-400 hover:border-rose-500/30 hover:text-rose-300'
-                  : 'border-indigo-400/40 bg-indigo-500/[0.08] text-indigo-200 hover:bg-indigo-500/[0.16]'
-              }`}
-            >
-              <AppIcon name="userPlus" className="h-3.5 w-3.5" />
-              {post.isFollowing ? 'Following' : 'Follow'}
-            </button>
-          )}
-
-          {!post.isOwnPost && (
-            <button
-              type="button"
-              onClick={() =>
-                setReportTarget({
-                  id: String(post.id),
-                  label: 'post',
-                  type: 'post',
-                })
-              }
-              className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/20 px-3 py-1 text-[11px] font-semibold text-amber-200 transition-colors hover:bg-amber-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
-            >
-              <AppIcon name="flag" className="h-3.5 w-3.5" />
-              Report
-            </button>
-          )}
-          </div>
-        </div>
-
-        {isEditing ? (
-          <div className="mb-4 space-y-3">
-            <textarea
-              value={draftContent}
-              onChange={(event) => setDraftContent(event.target.value)}
-              maxLength={500}
-              className="min-h-24 w-full resize-none rounded-xl border border-white/[0.08] bg-[#051223] px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
+      <article
+        id={`post-${post.id}`}
+        className="feed-card interactive-surface flex scroll-mt-24 gap-3 border border-white/[0.065] bg-gradient-to-b from-white/[0.055] to-white/[0.018] p-4 sm:gap-4 sm:p-5"
+      >
+        {resolvedAvatarUrl ? (
+          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-white/[0.12] shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+            <Image
+              src={resolvedAvatarUrl}
+              alt={`${post.user} avatar`}
+              fill
+              className="object-cover"
+              unoptimized
             />
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-slate-500">
-                {draftContent.length}/500 characters
-              </span>
-              <button
-                type="button"
-                onClick={submitEdit}
-                disabled={!draftContent.trim()}
-                className="rounded-lg bg-indigo-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Save edit
-              </button>
-            </div>
           </div>
         ) : (
-          <p className="mb-4 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-300">
-            <HighlightedText text={post.content} />
-          </p>
+          <div
+            className={`flex h-9 w-9 shrink-0 select-none items-center justify-center rounded-xl bg-gradient-to-tr ${post.avatarBg} text-xs font-bold text-white shadow-[0_10px_24px_rgba(0,0,0,0.18)]`}
+          >
+            {initials}
+          </div>
         )}
 
-        <PostMediaGrid mediaUrls={post.mediaUrls} />
+        <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+            <div className="flex min-w-0 flex-wrap items-baseline gap-2">
+              <span className="truncate text-[15px] font-bold text-slate-100 transition hover:text-indigo-300">
+                {post.user}
+              </span>
+              <span className="truncate text-xs text-slate-500">
+                {post.handle}
+              </span>
+              <span className="text-xs text-slate-700">-</span>
+              <span className="shrink-0 text-xs text-slate-500">
+                {post.time}
+              </span>
+            </div>
 
-        <div className="flex flex-wrap gap-3 text-xs font-medium text-slate-600">
-          <button
-            type="button"
-            onClick={() => setShowComments((current) => !current)}
-            className="inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 transition-colors hover:bg-white/[0.05] hover:text-slate-300"
-          >
-            <AppIcon name="chat" className="h-4 w-4" />
-            <span>Comment</span>
-            <span>{post.comments}</span>
-          </button>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {post.isOwnPost && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftContent(post.content);
+                      setIsEditing((current) => !current);
+                    }}
+                    className="pressable inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3 py-1 text-[11px] font-semibold text-slate-400 hover:bg-white/[0.06] hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                  >
+                    <AppIcon name="edit" className="h-3.5 w-3.5" />
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deletePost}
+                    className="pressable inline-flex items-center gap-1.5 rounded-full border border-rose-500/20 px-3 py-1 text-[11px] font-semibold text-rose-300 hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                  >
+                    <AppIcon name="trash" className="h-3.5 w-3.5" />
+                    Delete
+                  </button>
+                </>
+              )}
 
-          <button
-            type="button"
-            onClick={() => onToggleLike(post.id)}
-            className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 transition-colors ${
-              liked ? 'bg-rose-500/[0.08] text-rose-500' : 'hover:bg-white/[0.05] hover:text-slate-300'
-            }`}
-          >
-            <AppIcon name="heart" className={liked ? 'fill-current' : ''} />
-            <span>{liked ? 'Liked' : 'Like'}</span>
-            <span className={liked ? 'text-rose-500/90' : ''}>{post.likes}</span>
-          </button>
+              {canFollow && (
+                <button
+                  type="button"
+                  onClick={() => onToggleFollow(post.authorId!)}
+                  className={`pressable inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                    post.isFollowing
+                      ? 'border-white/[0.08] text-slate-400 hover:border-rose-500/30 hover:text-rose-300'
+                      : 'border-indigo-400/40 bg-indigo-500/[0.08] text-indigo-200 hover:bg-indigo-500/[0.16]'
+                  }`}
+                >
+                  <AppIcon name="userPlus" className="h-3.5 w-3.5" />
+                  {post.isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
 
-          <button
-            type="button"
-            onClick={handleSharePost}
-            className="inline-flex items-center gap-2 rounded-full px-2.5 py-1.5 transition-colors hover:bg-white/[0.05] hover:text-slate-300"
-          >
-            <AppIcon name="share" className="h-4 w-4" />
-            <span>
-              {shareStatus === 'copied'
-                ? 'Copied'
-                : shareStatus === 'shared'
-                  ? 'Shared'
-                  : shareStatus === 'failed'
-                    ? 'Copy failed'
-                  : 'Share'}
-            </span>
-          </button>
+              {!post.isOwnPost && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setReportTarget({
+                      id: String(post.id),
+                      label: 'post',
+                      type: 'post',
+                    })
+                  }
+                  className="pressable inline-flex items-center gap-1.5 rounded-full border border-amber-400/20 px-3 py-1 text-[11px] font-semibold text-amber-200 hover:bg-amber-400/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+                >
+                  <AppIcon name="flag" className="h-3.5 w-3.5" />
+                  Report
+                </button>
+              )}
+            </div>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => onHidePost(post.id)}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-slate-700 transition-colors hover:bg-white/[0.05] hover:text-slate-300"
-          >
-            <AppIcon name="eyeOff" className="h-4 w-4" />
-            Hide
-          </button>
+          {isEditing ? (
+            <div className="mb-4 space-y-3">
+              <textarea
+                value={draftContent}
+                onChange={(event) => setDraftContent(event.target.value)}
+                maxLength={500}
+                className="min-h-24 w-full resize-none rounded-xl border border-white/[0.08] bg-[#051223] px-3 py-2 text-sm text-slate-100 outline-none focus:border-indigo-500"
+              />
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-slate-500">
+                  {draftContent.length}/500 characters
+                </span>
+                <button
+                  type="button"
+                  onClick={submitEdit}
+                  disabled={!draftContent.trim()}
+                  className="pressable rounded-lg bg-indigo-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Save edit
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="mb-4 whitespace-pre-wrap break-words text-[15px] leading-7 text-slate-300">
+              <HighlightedText text={post.content} />
+            </p>
+          )}
 
-          {canModerateAuthor && (
-            <>
-              <button
-                type="button"
-                onClick={() => onMuteUser(post.authorId!)}
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 transition-colors hover:bg-white/[0.05] hover:text-slate-300"
-              >
-                <AppIcon name="mute" className="h-4 w-4" />
-                Mute
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setConfirmAction({
-                    description: `You will stop seeing posts from ${post.user}, and they will be removed from your visible feed.`,
-                    label: 'Block user',
-                    onConfirm: () => onBlockUser(post.authorId!),
-                    title: `Block ${post.user}?`,
-                  })
-                }
-                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-rose-400/80 transition-colors hover:bg-rose-500/[0.08] hover:text-rose-300"
-              >
-                <AppIcon name="block" className="h-4 w-4" />
-                Block
-              </button>
-            </>
+          <PostMediaGrid mediaUrls={post.mediaUrls} />
+
+          <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+            <button
+              type="button"
+              onClick={() => setShowComments((current) => !current)}
+              className="pressable inline-flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-white/[0.06] hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            >
+              <AppIcon name="chat" className="h-4 w-4" />
+              <span>Comment</span>
+              <span>{post.comments}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onToggleLike(post.id)}
+              className={`pressable inline-flex items-center gap-2 rounded-full px-3 py-1.5 ${
+                liked
+                  ? 'bg-rose-500/[0.08] text-rose-500'
+                  : 'hover:bg-white/[0.05] hover:text-slate-300'
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300`}
+            >
+              <AppIcon name="heart" className={liked ? 'fill-current' : ''} />
+              <span>{liked ? 'Liked' : 'Like'}</span>
+              <span className={liked ? 'text-rose-500/90' : ''}>
+                {post.likes}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSharePost}
+              className="pressable inline-flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-white/[0.06] hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            >
+              <AppIcon name="share" className="h-4 w-4" />
+              <span>
+                {shareStatus === 'copied'
+                  ? 'Copied'
+                  : shareStatus === 'shared'
+                    ? 'Shared'
+                    : shareStatus === 'failed'
+                      ? 'Copy failed'
+                      : 'Share'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onHidePost(post.id)}
+              className="pressable ml-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-slate-600 hover:bg-white/[0.06] hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+            >
+              <AppIcon name="eyeOff" className="h-4 w-4" />
+              Hide
+            </button>
+
+            {canModerateAuthor && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onMuteUser(post.authorId!)}
+                  className="pressable inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 hover:bg-white/[0.06] hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                >
+                  <AppIcon name="mute" className="h-4 w-4" />
+                  Mute
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfirmAction({
+                      description: `You will stop seeing posts from ${post.user}, and they will be removed from your visible feed.`,
+                      label: 'Block user',
+                      onConfirm: () => onBlockUser(post.authorId!),
+                      title: `Block ${post.user}?`,
+                    })
+                  }
+                  className="pressable inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-rose-400/80 hover:bg-rose-500/[0.08] hover:text-rose-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                >
+                  <AppIcon name="block" className="h-4 w-4" />
+                  Block
+                </button>
+              </>
+            )}
+          </div>
+
+          {showComments && (
+            <PostComments
+              post={post}
+              onAddComment={onAddComment}
+              onAddReply={onAddReply}
+              onToggleCommentLike={onToggleCommentLike}
+              onToggleReplyLike={onToggleReplyLike}
+              setReportTarget={setReportTarget}
+            />
           )}
         </div>
-
-        {showComments && (
-          <PostComments
-            post={post}
-            onAddComment={onAddComment}
-            onAddReply={onAddReply}
-            onToggleCommentLike={onToggleCommentLike}
-            onToggleReplyLike={onToggleReplyLike}
-            setReportTarget={setReportTarget}
-          />
-        )}
-      </div>
-    </article>
-    {reportTarget && (
-      <ReportContentModal
-        targetId={reportTarget.id}
-        targetLabel={reportTarget.label}
-        targetType={reportTarget.type}
-        onCancel={() => setReportTarget(null)}
-        onSubmit={(targetType, targetId, reason, details) => {
-          onReportContent(targetType, targetId, reason, details);
-          setReportTarget(null);
-        }}
-      />
-    )}
-    {confirmAction && (
-      <ConfirmActionModal
-        confirmLabel={confirmAction.label}
-        description={confirmAction.description}
-        intent={confirmAction.label.toLowerCase().includes('block') ? 'warning' : 'danger'}
-        title={confirmAction.title}
-        onCancel={() => setConfirmAction(null)}
-        onConfirm={() => {
-          confirmAction.onConfirm();
-          setConfirmAction(null);
-        }}
-      />
-    )}
+      </article>
+      {reportTarget && (
+        <ReportContentModal
+          targetId={reportTarget.id}
+          targetLabel={reportTarget.label}
+          targetType={reportTarget.type}
+          onCancel={() => setReportTarget(null)}
+          onSubmit={(targetType, targetId, reason, details) => {
+            onReportContent(targetType, targetId, reason, details);
+            setReportTarget(null);
+          }}
+        />
+      )}
+      {confirmAction && (
+        <ConfirmActionModal
+          confirmLabel={confirmAction.label}
+          description={confirmAction.description}
+          intent={
+            confirmAction.label.toLowerCase().includes('block')
+              ? 'warning'
+              : 'danger'
+          }
+          title={confirmAction.title}
+          onCancel={() => setConfirmAction(null)}
+          onConfirm={() => {
+            confirmAction.onConfirm();
+            setConfirmAction(null);
+          }}
+        />
+      )}
     </>
   );
 });

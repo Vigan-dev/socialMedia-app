@@ -13,7 +13,7 @@ type DesktopLayoutProps = {
 
 export function DesktopLayout({ home }: DesktopLayoutProps) {
   return (
-    <div className="app-grid grid min-h-screen w-full max-w-7xl grid-cols-[minmax(0,1fr)] px-0 pb-16 md:grid-cols-[256px_minmax(0,672px)] md:px-8 md:pb-0 lg:grid-cols-[256px_minmax(0,672px)_320px]">
+    <div className="app-grid grid min-h-screen w-full max-w-[1420px] grid-cols-[minmax(0,1fr)] gap-0 px-0 pb-20 md:grid-cols-[240px_minmax(0,704px)] md:gap-5 md:px-5 md:py-5 md:pb-5 lg:grid-cols-[252px_minmax(0,704px)_340px] xl:gap-6">
       <AppSidebar
         activeTab={home.activeTab}
         auth={home.auth}

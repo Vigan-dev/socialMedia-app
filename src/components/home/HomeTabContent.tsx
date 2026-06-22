@@ -96,9 +96,9 @@ export function HomeTabContent({
   };
 
   return (
-    <main className="relative min-h-screen min-w-0 border-r border-white/[0.05] bg-[#060911]/50">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.05] bg-[#060911]/80 p-4 shadow-sm backdrop-blur-xl">
-        <h1 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+    <main className="relative min-h-screen min-w-0 overflow-hidden border-x border-white/[0.055] bg-[#060911]/45 shadow-[0_0_70px_rgba(0,0,0,0.18)] md:min-h-[calc(100vh-2.5rem)] md:rounded-3xl">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/[0.06] bg-[#07101f]/82 px-5 py-4 shadow-[0_14px_32px_rgba(0,0,0,0.18)] backdrop-blur-xl">
+        <h1 className="text-sm font-black uppercase tracking-[0.18em] text-slate-200">
           {activeTab}
         </h1>
       </header>
@@ -118,105 +118,107 @@ export function HomeTabContent({
 
             {auth.isLoggedIn ? (
               <>
-                <div className="flex gap-4 border-b border-white/[0.05] bg-gradient-to-b from-white/[0.02] to-transparent p-5">
-                  <UserAvatar
-                    avatarUrl={auth.avatarUrl}
-                    username={auth.username}
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    <TextArea
-                      value={posts.composerInput}
-                      onChange={(event) =>
-                        posts.setComposerInput(event.target.value)
-                      }
-                      placeholder="Broadcast an update to the network..."
-                      className="h-16 pt-1"
+                <div className="m-4 rounded-3xl border border-white/[0.07] bg-gradient-to-b from-white/[0.07] to-white/[0.025] p-4 shadow-[0_18px_48px_rgba(0,0,0,0.22)] sm:p-5">
+                  <div className="flex gap-4">
+                    <UserAvatar
+                      avatarUrl={auth.avatarUrl}
+                      username={auth.username}
                     />
 
-                    <div className="flex items-center justify-between gap-3 border-t border-white/[0.03] pt-3">
-                      <p className="min-h-4 text-xs text-slate-500">
-                        {posts.composerDraftStatus === 'restored' &&
-                          'Draft restored'}
-                        {posts.composerDraftStatus === 'saved' &&
-                          'Draft saved'}
-                        {isUploadingPostMedia && 'Uploading image...'}
-                        {postMediaError}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <TextArea
+                        value={posts.composerInput}
+                        onChange={(event) =>
+                          posts.setComposerInput(event.target.value)
+                        }
+                        placeholder="Broadcast an update to the network..."
+                        className="h-20 rounded-2xl border-white/[0.08] bg-[#07101f]/80 pt-2 text-[15px]"
+                      />
 
-                      <div className="flex shrink-0 items-center gap-2">
-                        <input
-                          ref={postMediaInputRef}
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={handlePostMediaChange}
-                          className="sr-only"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => postMediaInputRef.current?.click()}
-                          disabled={
-                            isUploadingPostMedia ||
-                            posts.composerMediaUrls.length >= 4
-                          }
-                          className="px-3 py-1.5 text-xs"
-                        >
-                          Image
-                        </Button>
+                      <div className="mt-3 flex flex-col gap-3 border-t border-white/[0.05] pt-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="min-h-4 text-xs text-slate-500">
+                          {posts.composerDraftStatus === 'restored' &&
+                            'Draft restored'}
+                          {posts.composerDraftStatus === 'saved' &&
+                            'Draft saved'}
+                          {isUploadingPostMedia && 'Uploading image...'}
+                          {postMediaError}
+                        </p>
 
-                        <Button
-                          onClick={onPublishPost}
-                          disabled={
-                            !auth.isAuthReady ||
-                            !auth.isLoggedIn ||
-                            isUploadingPostMedia ||
-                            (!posts.composerInput.trim() &&
-                              posts.composerMediaUrls.length === 0)
-                          }
-                          className={`px-5 py-1.5 text-xs ${theme.themeAccent.split(' ')[0]}`}
-                        >
-                          Publish
-                        </Button>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <input
+                            ref={postMediaInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handlePostMediaChange}
+                            className="sr-only"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => postMediaInputRef.current?.click()}
+                            disabled={
+                              isUploadingPostMedia ||
+                              posts.composerMediaUrls.length >= 4
+                            }
+                            className="pressable px-3 py-1.5 text-xs"
+                          >
+                            Image
+                          </Button>
+
+                          <Button
+                            onClick={onPublishPost}
+                            disabled={
+                              !auth.isAuthReady ||
+                              !auth.isLoggedIn ||
+                              isUploadingPostMedia ||
+                              (!posts.composerInput.trim() &&
+                                posts.composerMediaUrls.length === 0)
+                            }
+                            className={`pressable px-5 py-1.5 text-xs shadow-[0_12px_28px_rgba(79,70,229,0.2)] ${theme.themeAccent.split(' ')[0]}`}
+                          >
+                            Publish
+                          </Button>
+                        </div>
                       </div>
-                    </div>
 
-                    {posts.composerMediaUrls.length > 0 && (
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-                        {posts.composerMediaUrls.map((url, index) => {
-                          const resolvedUrl = resolveMediaUrl(url);
-                          if (!resolvedUrl) return null;
+                      {posts.composerMediaUrls.length > 0 && (
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          {posts.composerMediaUrls.map((url, index) => {
+                            const resolvedUrl = resolveMediaUrl(url);
+                            if (!resolvedUrl) return null;
 
-                          return (
-                            <div
-                              key={`${url}-${index}`}
-                              className="relative aspect-video overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900"
-                            >
-                              <Image
-                                src={resolvedUrl}
-                                alt="Selected post media"
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 45vw, 320px"
-                                unoptimized
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  posts.setComposerMediaUrls((current) =>
-                                    current.filter((item) => item !== url),
-                                  )
-                                }
-                                className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white"
+                            return (
+                              <div
+                                key={`${url}-${index}`}
+                                className="relative aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-slate-900 shadow-[0_12px_30px_rgba(0,0,0,0.18)]"
                               >
-                                Remove
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                                <Image
+                                  src={resolvedUrl}
+                                  alt="Selected post media"
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 768px) 45vw, 320px"
+                                  unoptimized
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    posts.setComposerMediaUrls((current) =>
+                                      current.filter((item) => item !== url),
+                                    )
+                                  }
+                                  className="pressable absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white hover:bg-black/85"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

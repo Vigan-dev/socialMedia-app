@@ -55,20 +55,20 @@ export function SearchEngine({
   const isSearching = searchQuery.trim().length > 0;
 
   return (
-    <aside className="sticky top-0 hidden h-screen min-w-0 flex-col space-y-6 overflow-hidden py-8 pl-8 lg:flex">
+    <aside className="sticky top-5 hidden h-[calc(100vh-2.5rem)] min-w-0 flex-col gap-4 overflow-hidden rounded-3xl border border-white/[0.06] bg-[#07101f]/50 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl lg:flex">
       <div className="relative z-20 min-w-0">
         <input
           type="text"
           value={searchQuery}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search network and posts..."
-          className="w-full rounded-xl border border-white/[0.06] bg-[#0c111d]/60 py-2.5 pl-4 pr-9 text-xs text-slate-200 shadow-sm outline-none transition-all duration-300 placeholder:text-slate-500 focus:border-indigo-500/50 focus:bg-[#0c111d]"
+          className="w-full rounded-2xl border border-white/[0.07] bg-[#0c111d]/78 py-3 pl-4 pr-10 text-sm text-slate-100 shadow-inner outline-none placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-[#10192b]"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="absolute right-3 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] text-slate-300 transition hover:bg-slate-700"
+            className="pressable absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-[10px] text-slate-300 hover:bg-slate-700"
             aria-label="Clear search"
           >
             x
@@ -76,7 +76,7 @@ export function SearchEngine({
         )}
       </div>
 
-      <div className="custom-scrollbar min-w-0 flex-1 overflow-y-auto pr-2">
+      <div className="custom-scrollbar min-w-0 flex-1 overflow-y-auto pr-1">
         {isSearching ? (
           <SearchResultsSection
             filteredUsers={filteredUsers}

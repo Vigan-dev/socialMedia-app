@@ -70,10 +70,10 @@ export function AppSidebar({
   };
 
   return (
-    <aside className="sticky top-0 hidden h-screen min-w-0 flex-col justify-between border-r border-white/[0.05] py-8 pr-4 md:flex">
-      <div className="flex flex-col gap-10">
+    <aside className="sticky top-5 hidden h-[calc(100vh-2.5rem)] min-w-0 flex-col justify-between rounded-3xl border border-white/[0.06] bg-[#07101f]/55 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.24)] backdrop-blur-xl md:flex">
+      <div className="flex flex-col gap-8">
         <div className="flex items-center gap-3 px-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 text-lg font-black text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 text-lg font-black text-white shadow-[0_14px_35px_rgba(34,211,238,0.22)]">
             V
           </div>
 
@@ -90,10 +90,10 @@ export function AppSidebar({
               <button
                 key={tab}
                 onClick={() => selectTab(tab)}
-                className={`group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition duration-300 ease-out ${
+                className={`pressable group relative flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium ${
                   isActive
-                    ? 'border border-white/[0.08] bg-white/[0.08] font-semibold text-slate-100 shadow-lg'
-                    : 'text-slate-400 hover:bg-white/[0.08] hover:text-slate-100'
+                    ? 'border border-cyan-300/15 bg-white/[0.09] font-semibold text-slate-100 shadow-[0_14px_32px_rgba(0,0,0,0.2)]'
+                    : 'text-slate-400 hover:bg-white/[0.07] hover:text-slate-100'
                 }`}
               >
                 {isActive && (
@@ -104,12 +104,12 @@ export function AppSidebar({
 
                 <span className="min-w-0 truncate text-left">{tab}</span>
                 {tab === 'Notifications' && notificationsUnreadCount > 0 && (
-                  <span className="ml-auto rounded-full bg-indigo-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  <span className="ml-auto rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-[0_0_14px_rgba(99,102,241,0.45)]">
                     {notificationsUnreadCount}
                   </span>
                 )}
                 {tab === 'Messages' && messagesUnreadCount > 0 && (
-                  <span className="ml-auto rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  <span className="ml-auto rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-[0_0_14px_rgba(16,185,129,0.45)]">
                     {messagesUnreadCount}
                   </span>
                 )}
@@ -120,11 +120,11 @@ export function AppSidebar({
       </div>
 
       {auth.isLoggedIn ? (
-        <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
+        <div className="app-surface rounded-3xl p-2.5">
           <button
             type="button"
             onClick={() => selectTab('Profile')}
-            className="flex w-full items-center gap-3 rounded-xl p-1 text-left transition hover:bg-white/[0.05]"
+            className="pressable flex w-full items-center gap-3 rounded-2xl p-1.5 text-left hover:bg-white/[0.05]"
           >
             <UserAvatar avatarUrl={auth.avatarUrl} username={auth.username} />
 
@@ -146,7 +146,7 @@ export function AppSidebar({
             <button
               type="button"
               onClick={() => setIsStatusMenuOpen((current) => !current)}
-              className="group flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-[#0c111d]/80 px-3 py-2 text-left text-[11px] font-semibold text-slate-200 outline-none transition hover:border-indigo-400/50 hover:bg-[#11182a] focus:border-indigo-400"
+              className="pressable group flex w-full items-center justify-between rounded-2xl border border-white/[0.08] bg-[#0c111d]/80 px-3 py-2.5 text-left text-[11px] font-semibold text-slate-200 outline-none hover:border-indigo-400/50 hover:bg-[#11182a] focus:border-indigo-400"
               aria-expanded={isStatusMenuOpen}
               aria-haspopup="menu"
               aria-label="Set presence status"

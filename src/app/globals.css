@@ -8,7 +8,8 @@
   --surface-soft: rgba(255, 255, 255, 0.045);
   --border-soft: rgba(255, 255, 255, 0.08);
   --ring: rgba(56, 189, 248, 0.42);
-  --shadow-card: 0 20px 70px rgba(0, 0, 0, 0.32);
+  --shadow-card: 0 22px 70px rgba(0, 0, 0, 0.34);
+  --shadow-card-hover: 0 28px 90px rgba(0, 0, 0, 0.42);
   --font-app: var(--font-geist-sans), "Segoe UI", sans-serif;
 }
 
@@ -27,6 +28,7 @@ body {
   font-family: var(--font-app);
   overflow-x: hidden;
   text-rendering: optimizeLegibility;
+  line-height: 1.5;
 }
 
 body::before {
@@ -134,12 +136,74 @@ select:focus-visible {
   box-shadow: var(--shadow-card);
 }
 
+.app-surface {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+    rgba(8, 15, 29, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: var(--shadow-card);
+}
+
+.interactive-surface {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.interactive-surface:hover {
+  border-color: rgba(125, 211, 252, 0.18);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.pressable {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.pressable:active {
+  transform: scale(0.985);
+}
+
+.custom-scrollbar {
+  scrollbar-color: rgba(148, 163, 184, 0.28) transparent;
+  scrollbar-width: thin;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(125, 211, 252, 0.32);
+}
+
 .feed-card,
 .admin-pop-in,
 .status-menu,
 .mobile-more-menu,
 .cookie-consent {
   backface-visibility: hidden;
+}
+
+.feed-card {
+  border-radius: 1.35rem;
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.18);
 }
 
 [data-theme="light"] {
@@ -226,6 +290,39 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+input,
+textarea,
+select {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
+}
+
+.skeleton-shimmer {
+  animation: skeleton-shimmer 1.45s ease-in-out infinite;
+  background:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08), rgba(226, 232, 240, 0.18), rgba(148, 163, 184, 0.08));
+  background-size: 220% 100%;
 }
 
 @keyframes page-fade-in {
@@ -435,6 +532,15 @@ button:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
   .tab-panel-transition,
   .animate-\[message-fade-up_180ms_ease-out_both\],
   .animate-\[message-fade-up_220ms_ease-out_both\] {
