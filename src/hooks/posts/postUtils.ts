@@ -1,6 +1,6 @@
 import type { Post } from '@/types/feed';
 
-export type FeedMode = 'latest' | 'top' | 'following';
+export type FeedMode = 'latest' | 'trending' | 'following';
 
 export function accentGradient(accentColor: string) {
   if (accentColor === 'emerald') return 'from-emerald-600 to-teal-500';

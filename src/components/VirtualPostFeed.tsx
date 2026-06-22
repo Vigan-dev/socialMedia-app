@@ -191,7 +191,7 @@ function FeedToolbar({
 }) {
   const options: Array<{ id: FeedMode; label: string; helper: string }> = [
     { id: 'latest', label: 'Latest', helper: 'Newest posts first' },
-    { id: 'top', label: 'Top', helper: 'Most active posts' },
+    { id: 'trending', label: 'Trending', helper: 'Recent active posts' },
     { id: 'following', label: 'Following', helper: 'People you follow' },
   ];
 

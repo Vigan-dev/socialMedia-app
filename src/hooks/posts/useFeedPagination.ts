@@ -33,7 +33,7 @@ export function useFeedPagination({
       const params = new URLSearchParams({
         feed: feedMode === 'following' ? 'following' : 'all',
         limit: '12',
-        sort: feedMode === 'top' ? 'top' : 'latest',
+        sort: feedMode === 'trending' ? 'trending' : 'latest',
       });
 
       if (cursor) {
