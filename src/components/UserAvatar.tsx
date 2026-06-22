@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { resolveMediaUrl } from '@/lib/mediaUrls';
 
 type UserAvatarProps = {
   size?: string;
@@ -9,9 +10,11 @@ type UserAvatarProps = {
 };
 
 export function UserAvatar({ size = 'h-9 w-9', avatarUrl, username }: UserAvatarProps) {
-  return avatarUrl ? (
+  const resolvedAvatarUrl = resolveMediaUrl(avatarUrl);
+
+  return resolvedAvatarUrl ? (
     <div className={`relative overflow-hidden rounded-full border border-white/[0.1] shadow-sm ${size}`}>
-      <Image src={avatarUrl} alt="Avatar" fill className="object-cover" unoptimized />
+      <Image src={resolvedAvatarUrl} alt="Avatar" fill className="object-cover" unoptimized />
     </div>
   ) : (
     <div

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { resolveMediaUrl } from '@/lib/mediaUrls';
 import type { NetworkUser } from '@/types/feed';
 
 type NetworkUserCardProps = {
@@ -26,13 +27,15 @@ export function NetworkUserCard({
   onBlockUserRequest,
   onReportUserRequest,
 }: NetworkUserCardProps) {
+  const resolvedAvatarUrl = resolveMediaUrl(user.avatarUrl);
+
   return (
     <div className="min-w-0 rounded-xl border border-white/[0.04] bg-white/[0.025] p-3 transition hover:border-white/[0.08] hover:bg-white/[0.04]">
       <div className="flex min-w-0 items-center gap-3">
-        {user.avatarUrl ? (
+        {resolvedAvatarUrl ? (
           <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-white/[0.1]">
             <Image
-              src={user.avatarUrl}
+              src={resolvedAvatarUrl}
               alt={`${user.name} avatar`}
               fill
               className="object-cover"

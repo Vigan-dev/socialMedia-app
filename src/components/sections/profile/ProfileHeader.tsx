@@ -4,6 +4,7 @@ import type { ChangeEvent, RefObject } from 'react';
 import NextImage from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { resolveMediaUrl } from '@/lib/mediaUrls';
 import type { ProfileFieldErrors } from './profileTypes';
 
 type ProfileHeaderProps = {
@@ -44,6 +45,7 @@ export function ProfileHeader({
   username,
 }: ProfileHeaderProps) {
   const visibleAvatarUrl = showSettings ? draftAvatarUrl : avatarUrl;
+  const resolvedAvatarUrl = resolveMediaUrl(visibleAvatarUrl);
 
   return (
     <Card className="overflow-hidden">
@@ -65,9 +67,9 @@ export function ProfileHeader({
                 }`}
                 aria-label={showSettings ? 'Upload profile image' : 'Profile image'}
               >
-                {visibleAvatarUrl ? (
+                {resolvedAvatarUrl ? (
                   <NextImage
-                    src={visibleAvatarUrl}
+                    src={resolvedAvatarUrl}
                     alt="Profile avatar"
                     fill
                     className="object-cover"

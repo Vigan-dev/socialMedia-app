@@ -6,6 +6,7 @@ import {
   ConfirmActionModal,
   ReportContentModal,
 } from '@/components/ui/ActionModals';
+import { resolveMediaUrl } from '@/lib/mediaUrls';
 import type { NetworkUser, ReportReason } from '@/types/feed';
 
 type SocialUserCardProps = {
@@ -38,15 +39,16 @@ export function SocialUserCard({
 }: SocialUserCardProps) {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isBlockOpen, setIsBlockOpen] = useState(false);
+  const resolvedAvatarUrl = resolveMediaUrl(user.avatarUrl);
 
   return (
     <>
       <article className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
         <div className="flex items-start gap-3">
-          {user.avatarUrl ? (
+          {resolvedAvatarUrl ? (
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
               <NextImage
-                src={user.avatarUrl}
+                src={resolvedAvatarUrl}
                 alt={`${user.name} avatar`}
                 fill
                 className="object-cover"

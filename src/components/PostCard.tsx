@@ -10,6 +10,7 @@ import { HighlightedText } from '@/components/HighlightedText';
 import { PostComments } from '@/components/posts/PostComments';
 import { PostMediaGrid } from '@/components/posts/PostMediaGrid';
 import { AppIcon } from '@/components/ui/AppIcon';
+import { resolveMediaUrl } from '@/lib/mediaUrls';
 import { sharePost, type SharePostResult } from '@/lib/postSharing';
 import type { Post, ReportReason, ReportTargetType } from '@/types/feed';
 
@@ -86,6 +87,7 @@ export const PostCard = React.memo(function PostCard({
   const liked = Boolean(post.isLiked);
   const canFollow = Boolean(post.authorId) && !post.isOwnPost;
   const canModerateAuthor = Boolean(post.authorId) && !post.isOwnPost;
+  const resolvedAvatarUrl = resolveMediaUrl(post.avatarUrl);
 
   useEffect(() => {
     if (shareStatus === 'idle' || shareStatus === 'cancelled') return;
@@ -135,10 +137,10 @@ export const PostCard = React.memo(function PostCard({
       id={`post-${post.id}`}
       className="feed-card flex scroll-mt-24 gap-4 border-b border-white/[0.05] bg-[#0c111d]/10 p-5 transition duration-200 hover:bg-[#0c111d]/40"
     >
-      {post.avatarUrl ? (
+      {resolvedAvatarUrl ? (
         <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-white/[0.1] shadow-sm">
           <Image
-            src={post.avatarUrl}
+            src={resolvedAvatarUrl}
             alt={`${post.user} avatar`}
             fill
             className="object-cover"

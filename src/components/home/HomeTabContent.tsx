@@ -20,6 +20,7 @@ import type { useChat } from '@/hooks/useChat';
 import type { useNotifications } from '@/hooks/useNotifications';
 import type { usePosts } from '@/hooks/usePosts';
 import type { useThemePreference } from '@/hooks/useThemePreference';
+import { resolveMediaUrl } from '@/lib/mediaUrls';
 import { uploadPostImage } from '@/lib/uploads';
 import { HomeHero } from './HomeHero';
 import { InlineError } from './InlineError';
@@ -183,32 +184,37 @@ export function HomeTabContent({
 
                     {posts.composerMediaUrls.length > 0 && (
                       <div className="mt-3 grid grid-cols-2 gap-2">
-                        {posts.composerMediaUrls.map((url, index) => (
-                          <div
-                            key={`${url}-${index}`}
-                            className="relative aspect-video overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900"
-                          >
-                            <Image
-                              src={url}
-                              alt="Selected post media"
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 45vw, 320px"
-                              unoptimized
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                posts.setComposerMediaUrls((current) =>
-                                  current.filter((item) => item !== url),
-                                )
-                              }
-                              className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white"
+                        {posts.composerMediaUrls.map((url, index) => {
+                          const resolvedUrl = resolveMediaUrl(url);
+                          if (!resolvedUrl) return null;
+
+                          return (
+                            <div
+                              key={`${url}-${index}`}
+                              className="relative aspect-video overflow-hidden rounded-lg border border-white/[0.08] bg-slate-900"
                             >
-                              Remove
-                            </button>
-                          </div>
-                        ))}
+                              <Image
+                                src={resolvedUrl}
+                                alt="Selected post media"
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 45vw, 320px"
+                                unoptimized
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  posts.setComposerMediaUrls((current) =>
+                                    current.filter((item) => item !== url),
+                                  )
+                                }
+                                className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[11px] font-semibold text-white"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
